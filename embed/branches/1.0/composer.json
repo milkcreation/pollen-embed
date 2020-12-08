@@ -7,7 +7,7 @@
     "component",
     "embed"
   ],
-  "time": "2020-12-07",
+  "time": "2020-12-08",
   "license": "MIT",
   "authors": [
     {
@@ -26,7 +26,6 @@
     "php": ">=7.3",
     "composer/installers": "~1.0",
     "embed/embed": "^4.3",
-    "madcoda/php-youtube-api": "^1.2",
     "presstify/framework": ">=1.4",
     "vimeo/vimeo-api": "3.0"
   },
@@ -42,6 +41,11 @@
     "psr-4": {
       "Pollen\\Embed\\Test\\": "tests"
     }
+  },
+  "suggest": {
+    "essence/essence": "OEmbed library",
+    "madcoda/php-youtube-api": "Youtube Embed Api library",
+    "mpratt/embera": "OEmbed library"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

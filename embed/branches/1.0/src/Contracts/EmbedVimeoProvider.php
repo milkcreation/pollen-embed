@@ -2,7 +2,7 @@
 
 namespace Pollen\Embed\Contracts;
 
-interface EmbedVimeoDriver extends EmbedDriver
+interface EmbedVimeoProvider extends EmbedProvider
 {
 
 }

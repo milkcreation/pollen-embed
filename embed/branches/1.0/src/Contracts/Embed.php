@@ -36,9 +36,37 @@ interface Embed
      * @param string|array|null $key Clé d'indice du paramètre à récupérer|Liste des paramètre à définir.
      * @param mixed $default Valeur de retour par défaut lorsque la clé d'indice est une chaine de caractère.
      *
-     * @return mixed|ParamsBag
+     * @return ParamsBag|mixed
      */
     public function config($key = null, $default = null);
+
+    /**
+     * Retourne l'instance des données d'un service associé à une url.
+     *
+     * @param string $url
+     *
+     * @return EmbedProvider|null
+     */
+    public function dispatchFactory(string $url): ?EmbedFactory;
+
+    /**
+     * Récupération d'un fournisseur de service selon son nom de qualification.
+     *
+     * @param string $alias
+     *
+     * @return EmbedProvider|null
+     */
+    public function getProvider(string $alias): ?EmbedProvider;
+
+    /**
+     * Déclaration d'un fournisseur de service.
+     *
+     * @param string $alias
+     * @param EmbedProvider|array $providerDefinition
+     *
+     * @return EmbedProvider
+     */
+    public function registerProvider(string $alias, $providerDefinition = []): EmbedProvider;
 
     /**
      * Chemin absolu vers une ressources (fichier|répertoire).
@@ -57,4 +85,59 @@ interface Embed
      * @return static
      */
     public function setConfig(array $attrs): Embed;
+
+    /**
+     * Définition d'un fournisseur de service.
+     *
+     * @param string $alias
+     * @param EmbedProvider|array $providerDefinition
+     *
+     * @return static
+     */
+    public function setProvider(string $alias, $providerDefinition = []): Embed;
+
+    /**
+     * Récupération d'une instance de service fourni par Facebook.
+     *
+     * @param string $url
+     *
+     * @return EmbedFactory
+     */
+    public function facebook(string $url): EmbedFactory;
+
+    /**
+     * Récupération d'une instance de service fourni par Instagram.
+     *
+     * @param string $url
+     *
+     * @return EmbedFactory
+     */
+    public function instagram(string $url): EmbedFactory;
+
+    /**
+     * Récupération d'une instance de service fourni par Pinterest.
+     *
+     * @param string $url
+     *
+     * @return EmbedFactory
+     */
+    public function pinterest(string $url): EmbedFactory;
+
+    /**
+     * Récupération d'une instance de service fourni par Vimeo.
+     *
+     * @param string $url
+     *
+     * @return EmbedFactory
+     */
+    public function vimeo(string $url): EmbedFactory;
+
+    /**
+     * Récupération d'une instance de service fourni par Youtube.
+     *
+     * @param string $url
+     *
+     * @return EmbedFactory
+     */
+    public function youtube(string $url): EmbedFactory;
 }

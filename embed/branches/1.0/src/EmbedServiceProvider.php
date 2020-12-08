@@ -3,10 +3,17 @@
 namespace Pollen\Embed;
 
 use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
-use Pollen\Embed\Contracts\EmbedVimeoDriver as EmbedVimeoDriverContract;
-use Pollen\Embed\Contracts\EmbedYoutubeDriver as EmbedYoutubeDriverContract;
-use Pollen\Embed\Driver\EmbedVimeoDriver;
-use Pollen\Embed\Driver\EmbedYoutubeDriver;
+use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
+use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
+use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
+use Pollen\Embed\Contracts\EmbedPinterestProvider as EmbedPinterestProviderContract;
+use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
+use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
+use Pollen\Embed\Providers\EmbedFacebookProvider;
+use Pollen\Embed\Providers\EmbedInstagramProvider;
+use Pollen\Embed\Providers\EmbedPinterestProvider;
+use Pollen\Embed\Providers\EmbedVimeoProvider;
+use Pollen\Embed\Providers\EmbedYoutubeProvider;
 use tiFy\Container\ServiceProvider as BaseServiceProvider;
 
 class EmbedServiceProvider extends BaseServiceProvider
@@ -17,7 +24,13 @@ class EmbedServiceProvider extends BaseServiceProvider
      * @var string[]
      */
     protected $provides = [
-        EmbedManagerContract::class
+        EmbedManagerContract::class,
+        EmbedProviderContract::class,
+        EmbedFacebookProviderContract::class,
+        EmbedInstagramProviderContract::class,
+        EmbedPinterestProviderContract::class,
+        EmbedVimeoProviderContract::class,
+        EmbedYoutubeProviderContract::class
     ];
 
     /**
@@ -39,22 +52,38 @@ class EmbedServiceProvider extends BaseServiceProvider
             return new Embed(config('embed', []), $this->getContainer());
         });
 
-        $this->registerDrivers();
+        $this->registerProviders();
     }
 
     /**
-     * Déclaration des pilotes.
+     * Déclaration des fournisseurs de services.
      *
      * @return void
      */
-    public function registerDrivers(): void
+    public function registerProviders(): void
     {
-        $this->getContainer()->share(EmbedVimeoDriverContract::class, function (): EmbedVimeoDriverContract {
-            return new EmbedVimeoDriver($this->getContainer()->get(EmbedManagerContract::class));
+        $this->getContainer()->add(EmbedProviderContract::class, function (): EmbedProviderContract {
+            return new EmbedBaseProvider();
         });
 
-        $this->getContainer()->share(EmbedYoutubeDriverContract::class, function (): EmbedYoutubeDriverContract {
-            return new EmbedYoutubeDriver($this->getContainer()->get(EmbedManagerContract::class));
+        $this->getContainer()->share(EmbedFacebookProviderContract::class, function (): EmbedFacebookProviderContract {
+            return new EmbedFacebookProvider();
+        });
+
+        $this->getContainer()->share(EmbedInstagramProviderContract::class, function (): EmbedInstagramProviderContract {
+            return new EmbedInstagramProvider();
+        });
+
+        $this->getContainer()->share(EmbedPinterestProviderContract::class, function (): EmbedPinterestProviderContract {
+            return new EmbedPinterestProvider();
+        });
+
+        $this->getContainer()->share(EmbedVimeoProviderContract::class, function (): EmbedVimeoProviderContract {
+            return new EmbedVimeoProvider();
+        });
+
+        $this->getContainer()->share(EmbedYoutubeProviderContract::class, function (): EmbedYoutubeProviderContract {
+            return new EmbedYoutubeProvider();
         });
     }
 }

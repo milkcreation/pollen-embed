@@ -2,7 +2,7 @@
 
 namespace Pollen\Embed\Contracts;
 
-interface EmbedYoutubeDriver extends EmbedDriver
+interface EmbedPinterestProvider extends EmbedProvider
 {
 
 }
