@@ -2,16 +2,39 @@
 
 namespace Pollen\Embed\Providers;
 
+use RuntimeException;
+use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
+use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
+use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
 use Pollen\Embed\EmbedBaseFactory;
 use tiFy\Support\Proxy\Url;
 
-class EmbedYoutubeFactory extends EmbedBaseFactory
+class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactoryContract
 {
     /**
      * Url des données embarquées.
      * @var string
      */
     protected $baseEmbedUrl = 'https://www.youtube.com/embed/';
+
+    /**
+     * Identifiant de qualification de la video.
+     * @var string|null
+     */
+    protected $videoId;
+
+    /**
+     * @param string $url
+     * @param EmbedProviderContract $provider
+     */
+    public function __construct(string $url, EmbedProviderContract $provider)
+    {
+        parent::__construct($url, $provider);
+
+        if (!$this->getVideoId()) {
+            throw new RuntimeException('Unable to extract Video ID from url argument');
+        }
+    }
 
     /**
      * {@inheritDoc}
@@ -24,7 +47,7 @@ class EmbedYoutubeFactory extends EmbedBaseFactory
             'cc_lang_pref'    => null,
             'cc_lang_policy'  => null,
             'color'           => null,
-            'controls'        => 0,
+            'controls'        => 1,
             'disablekb'       => 0,
             'enablejsapi'     => 1,
             'end'             => null,
@@ -51,7 +74,18 @@ class EmbedYoutubeFactory extends EmbedBaseFactory
     {
         $baseEmbedUrl = $this->baseEmbedUrl ?? $this->url;
 
-        return Url::set($baseEmbedUrl)->with($this->params()->all())->render();
+        return Url::set($baseEmbedUrl)->appendSegment($this->getVideoId())->with($this->params()->all())->render();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVideoId(): ?string
+    {
+        if ($this->videoId === null) {
+            $this->videoId = $this->provider()->fetchVideoIdFromUrl($this->url);
+        }
+        return $this->videoId;
     }
 
     /**
@@ -65,5 +99,15 @@ class EmbedYoutubeFactory extends EmbedBaseFactory
             }
         }
         return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return EmbedYoutubeProviderContract
+     */
+    public function provider(): EmbedProviderContract
+    {
+        return parent::provider();
     }
 }

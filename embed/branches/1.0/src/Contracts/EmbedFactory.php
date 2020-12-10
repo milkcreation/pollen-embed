@@ -6,6 +6,7 @@ use Embed\Extractor;
 
 /**
  * @mixin \Embed\Embed
+ * @mixin \tiFy\Support\Concerns\ParamsBagTrait
  */
 interface EmbedFactory
 {
@@ -48,6 +49,20 @@ interface EmbedFactory
      * @return Extractor|object|array
      */
     public function getDatas();
+
+    /**
+     * Récupération de l'alias de qualification du fournisseur de service associé.
+     *
+     * @return string
+     */
+    public function getProviderAlias(): string;
+
+    /**
+     * Récupération de l'instance du fournisseur de service associé.
+     *
+     * @return EmbedProvider
+     */
+    public function provider(): EmbedProvider;
 
     /**
      * Rendu de l'affichage.

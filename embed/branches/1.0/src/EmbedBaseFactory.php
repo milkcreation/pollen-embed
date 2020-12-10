@@ -119,6 +119,22 @@ class EmbedBaseFactory implements EmbedFactoryContract
     /**
      * @inheritDoc
      */
+    public function getProviderAlias(): string
+    {
+        return $this->provider()->getAlias();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function provider(): EmbedProviderContract
+    {
+        return $this->provider;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function render(): string
     {
         return Partial::get('embed', ['url' => $this])->render();

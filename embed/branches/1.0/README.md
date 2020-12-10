@@ -13,10 +13,11 @@ composer require pollen-solutions/embed
 
 ## Setup
 
-### Declaration
+### Framework Declaration
+
+In config/app.php file.
 
 ```php
-// config/app.php
 return [
       //...
       'providers' => [
@@ -27,6 +28,22 @@ return [
       // ...
 ];
 ```
+
+### Standalone Declaration
+
+
+### NPM Usage
+
+In package.json file.
+
+```json
+{
+  "dependencies": {
+    "pollen-embed": "file:./vendor/pollen-solutions/embed"
+  }
+}
+```
+
 
 ### Configuration
 
