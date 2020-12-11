@@ -4,6 +4,8 @@ namespace Pollen\Embed\Proxy;
 
 use Pollen\Embed\Contracts\Embed as EmbedManager;
 use Pollen\Embed\Contracts\EmbedFactory;
+use Pollen\Embed\Contracts\EmbedVideoFactory;
+use Pollen\Embed\Contracts\EmbedYoutubeFactory;
 use Pollen\Embed\Contracts\EmbedProvider;
 use tiFy\Support\Proxy\AbstractProxy;
 
@@ -16,8 +18,9 @@ use tiFy\Support\Proxy\AbstractProxy;
  * @method static EmbedFactory facebook(string $url)
  * @method static EmbedFactory instagram(string $url)
  * @method static EmbedFactory pinterest(string $url)
+ * @method static EmbedVideoFactory video(string $url)
  * @method static EmbedFactory vimeo(string $url)
- * @method static EmbedFactory youtube(string $url)
+ * @method static EmbedYoutubeFactory youtube(string $url)
  */
 class Embed extends AbstractProxy
 {

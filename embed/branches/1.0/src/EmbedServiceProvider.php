@@ -3,21 +3,38 @@
 namespace Pollen\Embed;
 
 use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
-use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
 use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
 use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
 use Pollen\Embed\Contracts\EmbedPinterestProvider as EmbedPinterestProviderContract;
+use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
+use Pollen\Embed\Contracts\EmbedVideoFactory as EmbedVideoFactoryContract;
+use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
 use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
+use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
 use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
 use Pollen\Embed\Providers\EmbedFacebookProvider;
 use Pollen\Embed\Providers\EmbedInstagramProvider;
 use Pollen\Embed\Providers\EmbedPinterestProvider;
+use Pollen\Embed\Providers\EmbedVideoProvider;
 use Pollen\Embed\Providers\EmbedVimeoProvider;
 use Pollen\Embed\Providers\EmbedYoutubeProvider;
 use tiFy\Container\ServiceProvider as BaseServiceProvider;
 
 class EmbedServiceProvider extends BaseServiceProvider
 {
+    /**
+     * Liste des fournisseurs de services par défaut.
+     * @var string[][]
+     */
+    protected $defaultProviders = [
+        'facebook'  => EmbedFacebookProviderContract::class,
+        'instagram' => EmbedInstagramProviderContract::class,
+        'pinterest' => EmbedPinterestProviderContract::class,
+        'video'     => EmbedVideoProviderContract::class,
+        'vimeo'     => EmbedVimeoProviderContract::class,
+        'youtube'   => EmbedYoutubeProviderContract::class,
+    ];
+
     /**
      * Liste des noms de qualification des services fournis.
      * {@internal Permet le chargement différé des services qualifié.}
@@ -29,6 +46,7 @@ class EmbedServiceProvider extends BaseServiceProvider
         EmbedFacebookProviderContract::class,
         EmbedInstagramProviderContract::class,
         EmbedPinterestProviderContract::class,
+        EmbedVideoProviderContract::class,
         EmbedVimeoProviderContract::class,
         EmbedYoutubeProviderContract::class
     ];
@@ -49,7 +67,15 @@ class EmbedServiceProvider extends BaseServiceProvider
     public function register(): void
     {
         $this->getContainer()->share(EmbedManagerContract::class, function (): EmbedManagerContract {
-            return new Embed(config('embed', []), $this->getContainer());
+            $embed = new Embed(config('embed', []), $this->getContainer());
+
+            foreach ($this->defaultProviders as $alias => $abstract) {
+                if ($this->getContainer()->has($abstract)) {
+                    $embed->setProvider($alias, $this->getContainer()->get($abstract));
+                }
+            }
+
+            return $embed;
         });
 
         $this->registerProviders();
@@ -76,6 +102,10 @@ class EmbedServiceProvider extends BaseServiceProvider
 
         $this->getContainer()->share(EmbedPinterestProviderContract::class, function (): EmbedPinterestProviderContract {
             return new EmbedPinterestProvider();
+        });
+
+        $this->getContainer()->share(EmbedVideoProviderContract::class, function (): EmbedVideoProviderContract {
+            return new EmbedVideoProvider();
         });
 
         $this->getContainer()->share(EmbedVimeoProviderContract::class, function (): EmbedVimeoProviderContract {

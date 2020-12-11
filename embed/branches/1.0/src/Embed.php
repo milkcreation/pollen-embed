@@ -10,13 +10,18 @@ use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
 use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
 use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
 use Pollen\Embed\Contracts\EmbedPinterestProvider as EmbedPinterestProviderContract;
+use Pollen\Embed\Contracts\EmbedVideoFactory as EmbedVideoFactoryContract;
+use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
 use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
+use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
 use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
 use Pollen\Embed\Partial\EmbedPartial;
 use Psr\Container\ContainerInterface as Container;
+use ReflectionClass;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ContainerAwareTrait;
+use tiFy\Support\MimeTypes;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Partial;
 use tiFy\Support\Proxy\Storage;
@@ -42,18 +47,6 @@ class Embed implements EmbedManagerContract
      * @var ParamsBag
      */
     private $configBag;
-
-    /**
-     * Liste des fournisseurs de services par défaut.
-     * @var string[][]
-     */
-    protected $defaultProviders = [
-        'facebook'  => EmbedFacebookProviderContract::class,
-        'instagram' => EmbedInstagramProviderContract::class,
-        'pinterest' => EmbedPinterestProviderContract::class,
-        'vimeo'     => EmbedVimeoProviderContract::class,
-        'youtube'   => EmbedYoutubeProviderContract::class,
-    ];
 
     /**
      * Lise des fournisseurs de services déclarés.
@@ -98,12 +91,6 @@ class Embed implements EmbedManagerContract
     public function boot(): EmbedManagerContract
     {
         if (!$this->isBooted()) {
-            foreach ($this->defaultProviders as $alias => $abstract) {
-                if ($this->containerHas($abstract)) {
-                    $this->setProvider($alias, $this->containerGet($abstract));
-                }
-            }
-
             Partial::register('embed', new EmbedPartial($this));
 
             $this->setBooted();
@@ -135,11 +122,33 @@ class Embed implements EmbedManagerContract
      */
     public function dispatchFactory(string $url): ?EmbedFactoryContract
     {
-        $datas = (new EmbedApi())->get($url);
+        $reflector = new ReflectionClass(EmbedApi::class);
+        $ds = DIRECTORY_SEPARATOR;
+        $oembedPath = dirname($reflector->getFileName()). "{$ds}resources{$ds}oembed.php";
 
-        $alias = strtolower($datas->providerName);
-        if ($provider = $this->getProvider($alias)) {
-            return $provider->get($url)->setDatas($datas);
+        if (is_file($oembedPath)) {
+            $providers = require_once $oembedPath;
+
+            foreach($providers as $endpoint => $patterns) {
+                foreach($patterns as $pattern) {
+                    if (preg_match($pattern, $url)) {
+                        $oembed = $endpoint;
+                        break;
+                    }
+                }
+            }
+
+            if (isset($oembed)) {
+                $extractor = (new EmbedApi())->get($url);
+                if ($extractor->getOEmbed()->getEndpoint()) {
+                    $alias = strtolower($extractor->providerName);
+                    if ($provider = $this->getProvider($alias)) {
+                        return $provider->get($url)->setDatas($extractor);
+                    }
+                }
+            } else if (MimeTypes::inType($url, 'video')) {
+                return $this->video($url);
+            }
         }
 
         return null;
@@ -255,6 +264,20 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
+    public function video(string $url): EmbedVideoFactoryContract
+    {
+        $provider = $this->getProvider('video');
+
+        if ($provider instanceof EmbedVideoProviderContract) {
+            return $provider->get($url);
+        }
+
+        throw new RuntimeException('Unavailable Video provider');
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function vimeo(string $url): EmbedFactoryContract
     {
         $provider = $this->getProvider('vimeo');
@@ -269,7 +292,7 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
-    public function youtube(string $url): EmbedFactoryContract
+    public function youtube(string $url): EmbedYoutubeFactoryContract
     {
         $provider = $this->getProvider('youtube');
 

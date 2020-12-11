@@ -124,6 +124,15 @@ interface Embed
     public function pinterest(string $url): EmbedFactory;
 
     /**
+     * Récupération d'une instance de service d'une video.
+     *
+     * @param string $url
+     *
+     * @return EmbedVideoFactory
+     */
+    public function video(string $url): EmbedVideoFactory;
+
+    /**
      * Récupération d'une instance de service fourni par Vimeo.
      *
      * @param string $url
@@ -137,7 +146,7 @@ interface Embed
      *
      * @param string $url
      *
-     * @return EmbedFactory
+     * @return EmbedYoutubeFactory
      */
-    public function youtube(string $url): EmbedFactory;
+    public function youtube(string $url): EmbedYoutubeFactory;
 }

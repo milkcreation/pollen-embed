@@ -3,6 +3,8 @@
 import jQuery from 'jquery'
 import 'jquery-ui/ui/core'
 import 'jquery-ui/ui/widget'
+import canAutoPlay from 'can-autoplay'
+import VideoJs from 'video.js'
 import YouTubePlayer from 'youtube-player'
 import 'presstify-framework/observer/js/scripts'
 
@@ -45,30 +47,53 @@ jQuery(function ($) {
 
       if (self.player === undefined) {
         let playerID = this.el.attr('id'),
-            videoId = this.el.data('video-id'),
-            playerVars = $.parseJSON(decodeURIComponent(this.el.data('player-vars'))) || {}
+            provider = this.el.data('provider'),
+            videoParams = this.el.data('video-params') || undefined
 
         if (!playerID) {
           playerID = 'Embed--' + this.uuid
           this.el.attr('id', playerID)
         }
 
-        self.player = new YouTubePlayer(playerID, {
-          videoId: videoId,
-          playerVars: playerVars
-        })
+        if (videoParams) {
+          videoParams = $.parseJSON(decodeURIComponent(videoParams)) || {}
+        } else {
+          videoParams = {}
+        }
 
-        self.player.on('ready', (e) => {
-          let player = e.target
-          player.mute()
-          if (playerVars.autoplay) {
-            player.playVideo()
-          }
-        })
+        switch (provider) {
+          case 'video' :
+            self.player = new VideoJs(playerID, videoParams)
+            /**
+             * @see https://blog.videojs.com/autoplay-best-practices-with-video-js/
+             */
+            self.player.ready(() => {
+              if (videoParams.autoplay) {
+                canAutoPlay.video().then(({result, error}) => {
+                  if (result === true) {
+                    self.player.play()
+                  } else {
+                    console.log(error)
+                  }
+                })
+              }
+            })
+            break;
+          case 'youtube':
+            let videoId = this.el.data('video-id')
 
-        $('.ArticleTitle-content').click(function () {
-          self.player.playVideo()
-        })
+            self.player = new YouTubePlayer(playerID, {videoId: videoId, playerVars: videoParams})
+            self.player.on('ready', (e) => {
+              let player = e.target
+              player.mute()
+              if (videoParams.autoplay) {
+                player.playVideo()
+              }
+            })
+            break
+        }
+
+
       }
     }
     // EVENEMENTS
@@ -84,9 +109,9 @@ jQuery(function ($) {
 
   $(document).ready(function () {
     $('[data-control="embed"]').pollenEmbed()
-
+    /*
     $.tify.observe('[data-control="embed"]', function (i, target) {
       $(target).pollenEmbed()
-    })
+    }) */
   })
 })
