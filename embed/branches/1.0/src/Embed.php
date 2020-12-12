@@ -6,6 +6,7 @@ use LogicException, RuntimeException;
 use Embed\Embed as EmbedApi;
 use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
 use Pollen\Embed\Contracts\EmbedFactory as EmbedFactoryContract;
+use Pollen\Embed\Contracts\EmbedPartial as EmbedPartialContract;
 use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
 use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
 use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
@@ -19,11 +20,12 @@ use Pollen\Embed\Partial\EmbedPartial;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
+use tiFy\Contracts\Partial\Partial as PartialManagerContract;
+use tiFy\Partial\Partial;
 use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ContainerAwareTrait;
 use tiFy\Support\MimeTypes;
 use tiFy\Support\ParamsBag;
-use tiFy\Support\Proxy\Partial;
 use tiFy\Support\Proxy\Storage;
 
 class Embed implements EmbedManagerContract
@@ -91,7 +93,16 @@ class Embed implements EmbedManagerContract
     public function boot(): EmbedManagerContract
     {
         if (!$this->isBooted()) {
-            Partial::register('embed', new EmbedPartial($this));
+            if ($this->containerHas(PartialManagerContract::class)) {
+                /** @var PartialManagerContract $partialManager */
+                $partialManager = $this->containerGet(PartialManagerContract::class);
+            } else {
+                $partialManager = Partial::instance();
+            }
+
+            $partialManager->register('embed', $this->containerHas(EmbedPartialContract::class)
+                ? EmbedPartialContract::class : new EmbedPartial($this, $partialManager)
+            );
 
             $this->setBooted();
         }
@@ -168,7 +179,7 @@ class Embed implements EmbedManagerContract
     public function resources(?string $path = null)
     {
         if (!isset($this->resources) || is_null($this->resources)) {
-            $this->resources = Storage::local(dirname(__DIR__) . '/resources');
+            $this->resources = Storage::local(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'resources');
         }
         return is_null($path) ? $this->resources : $this->resources->path($path);
     }

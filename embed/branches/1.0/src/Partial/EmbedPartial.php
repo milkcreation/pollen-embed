@@ -4,11 +4,13 @@ namespace Pollen\Embed\Partial;
 
 use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
 use Pollen\Embed\Contracts\EmbedFactory as EmbedFactoryContract;
+use Pollen\Embed\Contracts\EmbedPartial as EmbedPartialContract;
 use Pollen\Embed\Contracts\EmbedVideoFactory as EmbedVideoFactoryContract;
 use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
+use tiFy\Contracts\Partial\Partial as PartialManager;
 use tiFy\Partial\PartialDriver as BasePartialDriver;
 
-class EmbedPartial extends BasePartialDriver
+class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
 {
     /**
      * Instance du gestionnaire de données embarquées.
@@ -18,40 +20,21 @@ class EmbedPartial extends BasePartialDriver
 
     /**
      * @param EmbedManagerContract $embedManager
+     * @param PartialManager $partialManager
      */
-    public function __construct(EmbedManagerContract $embedManager)
+    public function __construct(EmbedManagerContract $embedManager, PartialManager $partialManager)
     {
         $this->embedManager = $embedManager;
+
+        parent::__construct($partialManager);
     }
 
     /**
      * @inheritDoc
-     *
-     * @return array
      */
-    public function defaults(): array
+    public function defaultParams(): array
     {
-        return array_merge(parent::defaults(), [
-            /**
-             * Attributs HTML du champ.
-             * @var array $attrs
-             */
-            'attrs'      => [],
-            /**
-             * Contenu placé après le champ.
-             * @var string $after
-             */
-            'after'      => '',
-            /**
-             * Contenu placé avant le champ.
-             * @var string $before
-             */
-            'before'     => '',
-            /**
-             * Liste des attributs de configuration du pilote d'affichage.
-             * @var array $viewer
-             */
-            'viewer'     => [],
+        return array_merge(parent::defaultParams(), [
             /**
              * Url|Instance des données embarqués distribuées par le fournisseur de service.
              * @var EmbedFactoryContract|string|null

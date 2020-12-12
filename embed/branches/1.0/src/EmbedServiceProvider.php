@@ -5,19 +5,20 @@ namespace Pollen\Embed;
 use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
 use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
 use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
+use Pollen\Embed\Contracts\EmbedPartial as EmbedPartialContract;
 use Pollen\Embed\Contracts\EmbedPinterestProvider as EmbedPinterestProviderContract;
 use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
-use Pollen\Embed\Contracts\EmbedVideoFactory as EmbedVideoFactoryContract;
 use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
 use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
-use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
 use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
+use Pollen\Embed\Partial\EmbedPartial;
 use Pollen\Embed\Providers\EmbedFacebookProvider;
 use Pollen\Embed\Providers\EmbedInstagramProvider;
 use Pollen\Embed\Providers\EmbedPinterestProvider;
 use Pollen\Embed\Providers\EmbedVideoProvider;
 use Pollen\Embed\Providers\EmbedVimeoProvider;
 use Pollen\Embed\Providers\EmbedYoutubeProvider;
+use tiFy\Contracts\Partial\Partial as PartialManager;
 use tiFy\Container\ServiceProvider as BaseServiceProvider;
 
 class EmbedServiceProvider extends BaseServiceProvider
@@ -45,6 +46,7 @@ class EmbedServiceProvider extends BaseServiceProvider
         EmbedProviderContract::class,
         EmbedFacebookProviderContract::class,
         EmbedInstagramProviderContract::class,
+        EmbedPartialContract::class,
         EmbedPinterestProviderContract::class,
         EmbedVideoProviderContract::class,
         EmbedVimeoProviderContract::class,
@@ -78,7 +80,24 @@ class EmbedServiceProvider extends BaseServiceProvider
             return $embed;
         });
 
+        $this->registerPartials();
         $this->registerProviders();
+    }
+
+    /**
+     * Déclaration des pilotes de portions d'affichage.
+     *
+     * @return void
+     */
+    public function registerPartials(): void
+    {
+        $this->getContainer()->add(EmbedPartialContract::class, function (): EmbedPartialContract {
+            return new EmbedPartial(
+                $this->getContainer()->get(EmbedManagerContract::class),
+                $this->getContainer()->get(PartialManager::class)
+
+            );
+        });
     }
 
     /**
