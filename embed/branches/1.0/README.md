@@ -49,7 +49,7 @@ In package.json file.
 
 ```php
 // config/embed.php
-// @see /vendor/pollen-solutions/embed/config/embed.php
+// @see /vendor/pollen-solutions/embed/resources/config/embed.php
 return [
       //...
 
