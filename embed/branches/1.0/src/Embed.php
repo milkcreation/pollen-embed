@@ -5,7 +5,9 @@ namespace Pollen\Embed;
 use LogicException, RuntimeException;
 use Embed\Embed as EmbedApi;
 use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
+use Pollen\Embed\Contracts\EmbedAdapter;
 use Pollen\Embed\Contracts\EmbedFactory as EmbedFactoryContract;
+use Pollen\Embed\Contracts\EmbedField as EmbedFieldContract;
 use Pollen\Embed\Contracts\EmbedPartial as EmbedPartialContract;
 use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
 use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
@@ -16,6 +18,7 @@ use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
 use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
 use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
 use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
+use Pollen\Embed\Field\EmbedField;
 use Pollen\Embed\Partial\EmbedPartial;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
@@ -26,6 +29,7 @@ use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ContainerAwareTrait;
 use tiFy\Support\MimeTypes;
 use tiFy\Support\ParamsBag;
+use tiFy\Support\Proxy\Field;
 use tiFy\Support\Proxy\Storage;
 
 class Embed implements EmbedManagerContract
@@ -51,6 +55,12 @@ class Embed implements EmbedManagerContract
     private $configBag;
 
     /**
+     * Instance de l'adapteur associé
+     * @var EmbedAdapter|null
+     */
+    protected $adapter;
+
+    /**
      * Lise des fournisseurs de services déclarés.
      * @var EmbedProviderContract[]|array
      */
@@ -59,15 +69,19 @@ class Embed implements EmbedManagerContract
     /**
      * @param array $config
      * @param Container|null $container
-     *
+     * @param EmbedAdapter|null $adapter
      * @return void
      */
-    public function __construct(array $config = [], Container $container = null)
+    public function __construct(array $config = [], Container $container = null, EmbedAdapter $adapter = null)
     {
         $this->setConfig($config);
 
         if (!is_null($container)) {
             $this->setContainer($container);
+        }
+
+        if($adapter !== null) {
+            $this->setAdapter($adapter);
         }
 
         if (!self::$instance instanceof static) {
@@ -83,7 +97,6 @@ class Embed implements EmbedManagerContract
         if (self::$instance instanceof self) {
             return self::$instance;
         }
-
         throw new RuntimeException(sprintf('Unavailable %s instance', __CLASS__));
     }
 
@@ -93,20 +106,21 @@ class Embed implements EmbedManagerContract
     public function boot(): EmbedManagerContract
     {
         if (!$this->isBooted()) {
-            if ($this->containerHas(PartialManagerContract::class)) {
-                /** @var PartialManagerContract $partialManager */
-                $partialManager = $this->containerGet(PartialManagerContract::class);
-            } else {
-                $partialManager = Partial::instance();
-            }
+            Field::register('embed', $this->containerHas(EmbedFieldContract::class)
+                ? $this->containerGet(EmbedFieldContract::class) : new EmbedField($this)
+            );
 
+            $partialManager = ($this->containerHas(PartialManagerContract::class)
+                ? $this->containerGet(PartialManagerContract::class) : Partial::instance()
+            );
+
+            /** @var PartialManagerContract $partialManager */
             $partialManager->register('embed', $this->containerHas(EmbedPartialContract::class)
                 ? EmbedPartialContract::class : new EmbedPartial($this, $partialManager)
             );
 
             $this->setBooted();
         }
-
         return $this;
     }
 
@@ -208,6 +222,16 @@ class Embed implements EmbedManagerContract
             ->setAlias($alias)
             ->setParams(array_merge($this->config("providers.{$alias}", []), $params))
             ->build();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAdapter(EmbedAdapter $adapter): EmbedManagerContract
+    {
+        $this->adapter = $adapter->setEmbedManager($this);
+
+        return $this;
     }
 
     /**

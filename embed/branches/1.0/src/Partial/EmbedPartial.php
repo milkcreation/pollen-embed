@@ -7,16 +7,13 @@ use Pollen\Embed\Contracts\EmbedFactory as EmbedFactoryContract;
 use Pollen\Embed\Contracts\EmbedPartial as EmbedPartialContract;
 use Pollen\Embed\Contracts\EmbedVideoFactory as EmbedVideoFactoryContract;
 use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
+use Pollen\Embed\EmbedAwareTrait;
 use tiFy\Contracts\Partial\Partial as PartialManager;
 use tiFy\Partial\PartialDriver as BasePartialDriver;
 
 class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
 {
-    /**
-     * Instance du gestionnaire de données embarquées.
-     * @var EmbedManagerContract
-     */
-    private $embedManager;
+    use EmbedAwareTrait;
 
     /**
      * @param EmbedManagerContract $embedManager
@@ -24,7 +21,7 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
      */
     public function __construct(EmbedManagerContract $embedManager, PartialManager $partialManager)
     {
-        $this->embedManager = $embedManager;
+        $this->setEmbedManager($embedManager);
 
         parent::__construct($partialManager);
     }
@@ -38,7 +35,7 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
             /**
              * Url|Instance des données embarqués distribuées par le fournisseur de service.
              * @var EmbedFactoryContract|string|null
-             * {@internal EmbedFactoryContract recommandé, meilleurs performances.}
+             * {@internal EmbedFactoryContract recommandé, meilleures performances.}
              */
             'url'        => null,
             /**
@@ -73,7 +70,8 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
         if (!$url = $this->pull('url')) {
             return '';
         } elseif (!$url instanceof EmbedFactoryContract) {
-            $factory = $this->embedManager->dispatchFactory($url);
+            $url = trim($url);
+            $factory = $this->embedManager()->dispatchFactory($url);
         } else {
             $factory = $url;
         }
@@ -163,6 +161,6 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
      */
     public function viewDirectory(): string
     {
-        return $this->embedManager->resources('/views/partial/embed');
+        return $this->embedManager()->resources('/views/partial/embed');
     }
 }

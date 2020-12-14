@@ -25,6 +25,8 @@ jQuery(function ($) {
 
       this.el = this.element
 
+      this.el.attr('data-control', 'embed-loaded');
+
       this._initOptions()
       this._initEvents()
       this._initControls()
@@ -92,8 +94,6 @@ jQuery(function ($) {
             })
             break
         }
-
-
       }
     }
     // EVENEMENTS
@@ -109,9 +109,9 @@ jQuery(function ($) {
 
   $(document).ready(function () {
     $('[data-control="embed"]').pollenEmbed()
-    /*
+
     $.tify.observe('[data-control="embed"]', function (i, target) {
       $(target).pollenEmbed()
-    }) */
+    })
   })
 })

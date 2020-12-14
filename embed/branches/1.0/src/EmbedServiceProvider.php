@@ -2,6 +2,7 @@
 
 namespace Pollen\Embed;
 
+use Pollen\Embed\Adapters\WordpressAdapter;
 use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
 use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
 use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
@@ -11,6 +12,9 @@ use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
 use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
 use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
 use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
+use Pollen\Embed\Contracts\EmbedField as EmbedFieldContract;
+use Pollen\Embed\Contracts\WordpressAdapter as WordpressAdapterContract;
+use Pollen\Embed\Field\EmbedField;
 use Pollen\Embed\Partial\EmbedPartial;
 use Pollen\Embed\Providers\EmbedFacebookProvider;
 use Pollen\Embed\Providers\EmbedInstagramProvider;
@@ -45,12 +49,14 @@ class EmbedServiceProvider extends BaseServiceProvider
         EmbedManagerContract::class,
         EmbedProviderContract::class,
         EmbedFacebookProviderContract::class,
+        EmbedFieldContract::class,
         EmbedInstagramProviderContract::class,
         EmbedPartialContract::class,
         EmbedPinterestProviderContract::class,
         EmbedVideoProviderContract::class,
         EmbedVimeoProviderContract::class,
-        EmbedYoutubeProviderContract::class
+        EmbedYoutubeProviderContract::class,
+        WordpressAdapterContract::class
     ];
 
     /**
@@ -59,7 +65,8 @@ class EmbedServiceProvider extends BaseServiceProvider
     public function boot()
     {
         events()->listen('wp.booted', function () {
-            $this->getContainer()->get(EmbedManagerContract::class)->boot();
+            $this->getContainer()->get(EmbedManagerContract::class)
+                ->setAdapter($this->getContainer()->get(WordpressAdapterContract::class))->boot();
         });
     }
 
@@ -76,12 +83,37 @@ class EmbedServiceProvider extends BaseServiceProvider
                     $embed->setProvider($alias, $this->getContainer()->get($abstract));
                 }
             }
-
             return $embed;
         });
 
+        $this->registerAdapters();
+        $this->registerFields();
         $this->registerPartials();
         $this->registerProviders();
+    }
+
+    /**
+     * Déclaration des adapteurs.
+     *
+     * @return void
+     */
+    public function registerAdapters(): void
+    {
+        $this->getContainer()->share(WordpressAdapterContract::class, function (): WordpressAdapterContract {
+            return new WordpressAdapter();
+        });
+    }
+
+    /**
+     * Déclaration des pilotes de champs.
+     *
+     * @return void
+     */
+    public function registerFields(): void
+    {
+        $this->getContainer()->add(EmbedFieldContract::class, function (): EmbedFieldContract {
+            return new EmbedField($this->getContainer()->get(EmbedManagerContract::class));
+        });
     }
 
     /**
@@ -95,7 +127,6 @@ class EmbedServiceProvider extends BaseServiceProvider
             return new EmbedPartial(
                 $this->getContainer()->get(EmbedManagerContract::class),
                 $this->getContainer()->get(PartialManager::class)
-
             );
         });
     }

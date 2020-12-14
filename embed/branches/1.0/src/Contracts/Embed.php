@@ -70,12 +70,23 @@ interface Embed
 
     /**
      * Chemin absolu vers une ressources (fichier|répertoire).
-     *
+     *    public function __construct() {
+        exit;
+    }
      * @param string|null $path Chemin relatif vers la ressource.
      *
      * @return LocalFilesystem|string|null
      */
     public function resources(?string $path = null);
+
+    /**
+     * Définition de l'adapteur associé.
+     *
+     * @param EmbedAdapter $adapter
+     *
+     * @return static
+     */
+    public function setAdapter(EmbedAdapter $adapter): Embed;
 
     /**
      * Définition des paramètres de configuration.
