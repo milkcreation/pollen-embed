@@ -12,10 +12,13 @@ jQuery(function ($) {
     xhr: undefined,
     options: {},
     controls: {
+      inputWrapper: '.FieldEmbed-input',
       wrapper: '.FieldEmbed-wrapper',
-      preview: '.FieldEmbed-preview'
+      preview: '.FieldEmbed-preview',
+      spinner: '.FieldEmbed-spinner'
     },
     player: undefined,
+    keyUpTimeOut: null,
 
     // INITIALISATION
     // -----------------------------------------------------------------------------------------------------------------
@@ -28,6 +31,8 @@ jQuery(function ($) {
       this._initOptions(this)
       this._initControls(this)
       this._initEvents(this)
+
+      this.el.trigger('loaded')
     },
     // Initialisation des attributs de configuration.
     _initOptions: (self) => {
@@ -44,6 +49,16 @@ jQuery(function ($) {
         self.wrapper = self.el.wrap('<div class="FieldEmbed-wrapper"/>').parent()
       }
 
+      self.inputWrapper = $(self.controls.inputWrapper)
+      if (!self.inputWrapper.length) {
+        self.inputWrapper = self.el.wrap('<div class="FieldEmbed-inputWrapper"/>').parent()
+      }
+
+      self.spinner = $(self.controls.spinner)
+      if (!self.controls.spinner.length) {
+        self.controls.spinner = $('<div class="FieldEmbed-spinner"/>').appendTo(self.inputWrapper)
+      }
+
       self.preview = $(self.controls.preview)
       if (!self.preview.length) {
         self.preview = $('<div class="FieldEmbed-preview"/>').appendTo(self.wrapper)
@@ -53,35 +68,53 @@ jQuery(function ($) {
     _initEvents: (self) => {
       let events = {
         'keyup': (e) => {
-          self._keyUpdelay(self._fetchPreview(e, self), 500)
+          self._keyUpDelay(e, self, 500)
         },
         'loaded': (e) => {
           self._fetchPreview(e, self)
         }
       }
       self._on(self.el, events)
-
-      self.el.trigger('loaded')
     },
     // EVENEMENTS
     // -----------------------------------------------------------------------------------------------------------------
-    _keyUpdelay: (fn, ms) => {
-      let timer = 0
-
-      return function(...args) {
-        clearTimeout(timer)
-        timer = setTimeout(fn.bind(this, ...args), ms || 0)
+    // Delai de saisie
+    _keyUpDelay: (e, self, ms) => {
+      if (self.keyUpTimeOut !== null) {
+        clearTimeout(self.keyUpTimeOut)
       }
+      self.keyUpTimeOut = setTimeout(() => {
+        self.keyUpTimeOut = null
+        self._fetchPreview(e, self)
+      }, ms)
     },
+    // Récupération de l'aperçu
     _fetchPreview: (e, self) => {
-      self.preview.empty()
+      let value = self.el.val()
 
-      let value = self.el.val(),
-          ajax = $.extend(self.option('ajax'), {data: {value: value}})
+      if (self.value !== value) {
+        self.spinner.show()
+        self.el.prop('disabled', true)
 
-      $.ajax(ajax).done((resp) => {
-        self.preview.html(resp.data)
-      })
+        if (self.xhr !== undefined) {
+          self.xhr.abort()
+          self.xhr = undefined
+        }
+
+        self.preview.empty()
+        let ajax = $.extend(self.option('ajax'), {data: {value: value}})
+
+        self.xhr = $.ajax(ajax)
+            .done((resp) => {
+              self.preview.html(resp.data.render)
+            })
+            .always(() => {
+              self.spinner.hide()
+              self.el.prop('disabled', false).focus()
+            })
+
+        self.value = value
+      }
     }
     // ACTIONS
     // -----------------------------------------------------------------------------------------------------------------

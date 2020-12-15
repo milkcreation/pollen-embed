@@ -5,10 +5,10 @@ namespace Pollen\Embed\Contracts;
 use Embed\Extractor;
 
 /**
- * @mixin \Embed\Embed
+ * @mixin \Embed\Extractor
  * @mixin \tiFy\Support\Concerns\ParamsBagTrait
  */
-interface EmbedFactory
+interface EmbedFactoryContract
 {
     /**
      * Délégation d'appel des attributs de l'api.
@@ -32,7 +32,7 @@ interface EmbedFactory
     /**
      * Récupération du pilote de délégation.
      *
-     * @return object
+     * @return Extractor|object
      */
     public function delegateApiDriver(): object;
 
@@ -44,11 +44,11 @@ interface EmbedFactory
     public function getEmbedUrl(): string;
 
     /**
-     * Récupération de la liste des informations.
+     * Récupération de l'url d'accès aux données embarquées.
      *
-     * @return Extractor|object|array
+     * @return string|null
      */
-    public function getDatas();
+    public function getOEmbedEndpoint(): ?string;
 
     /**
      * Récupération de l'alias de qualification du fournisseur de service associé.
@@ -58,11 +58,25 @@ interface EmbedFactory
     public function getProviderAlias(): string;
 
     /**
+     * Récupération de l'url.
+     *
+     * @return string
+     */
+    public function getUrl(): string;
+
+    /**
+     * Vérifie si le contenu embarqué est associé à un fournisseur de services en ligne.
+     *
+     * @return bool
+     */
+    public function isEmbeded(): bool;
+
+    /**
      * Récupération de l'instance du fournisseur de service associé.
      *
-     * @return EmbedProvider
+     * @return EmbedProviderContract
      */
-    public function provider(): EmbedProvider;
+    public function provider(): EmbedProviderContract;
 
     /**
      * Rendu de l'affichage.
@@ -78,5 +92,5 @@ interface EmbedFactory
      *
      * @return static
      */
-    public function setDatas($datas): EmbedFactory;
+    public function setDatas($datas): EmbedFactoryContract;
 }

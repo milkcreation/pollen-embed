@@ -4,6 +4,7 @@
  */
 ?>
 <?php if ($this->get('responsive')) : ?>
-<?php $this->layout('responsive-layout', $this->all()); ?>
+    <?php $this->layout('responsive-layout', $this->all()); ?>
 <?php endif; ?>
-<iframe <?php echo $this->htmlAttrs(); ?>></iframe>
+
+<?php $this->insert($this->get('provider'), $this->all());

@@ -2,10 +2,9 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
 use Pollen\Embed\EmbedBaseProvider;
 
-class EmbedInstagramProvider extends EmbedBaseProvider implements EmbedInstagramProviderContract
+class EmbedInstagramProvider extends EmbedBaseProvider implements EmbedInstagramProviderInterface
 {
 
 }

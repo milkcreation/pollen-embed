@@ -2,11 +2,10 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
-use Pollen\Embed\Contracts\EmbedFactory as EmbedFactoryContract;
+use Pollen\Embed\Contracts\EmbedFactoryContract;
 use Pollen\Embed\EmbedBaseProvider;
 
-class EmbedVideoProvider extends EmbedBaseProvider implements EmbedVideoProviderContract
+class EmbedVideoProvider extends EmbedBaseProvider implements EmbedVideoProviderInterface
 {
     /**
      * @inheritDoc

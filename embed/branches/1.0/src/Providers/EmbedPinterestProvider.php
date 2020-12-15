@@ -2,10 +2,9 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedPinterestProvider as EmbedPinterestProviderContract;
 use Pollen\Embed\EmbedBaseProvider;
 
-class EmbedPinterestProvider extends EmbedBaseProvider implements EmbedPinterestProviderContract
+class EmbedPinterestProvider extends EmbedBaseProvider implements EmbedPinterestProviderInterface
 {
 
 }

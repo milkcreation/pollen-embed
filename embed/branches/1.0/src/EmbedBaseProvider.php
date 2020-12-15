@@ -3,21 +3,15 @@
 namespace Pollen\Embed;
 
 use LogicException;
-use Pollen\Embed\Contracts\Embed as EmbedManager;
-use Pollen\Embed\Contracts\EmbedFactory as EmbedFactoryContract;
-use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
-use tiFy\Support\Concerns\BuildableTrait;
+use Pollen\Embed\Contracts\EmbedContract;
+use Pollen\Embed\Contracts\EmbedFactoryContract;
+use Pollen\Embed\Contracts\EmbedProviderContract;
+use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ParamsBagTrait;
 
 class EmbedBaseProvider implements EmbedProviderContract
 {
-    use BuildableTrait, ParamsBagTrait;
-
-    /**
-     * Instance du gestionnaire de services.
-     * @var EmbedManager
-     */
-    private $embedManager;
+    use BootableTrait, EmbedAwareTrait, ParamsBagTrait;
 
     /**
      * Alias de qualification.
@@ -26,20 +20,28 @@ class EmbedBaseProvider implements EmbedProviderContract
     protected $alias = '';
 
     /**
+     * @param EmbedContract $embedManager
+     */
+    public function __construct(EmbedContract $embedManager)
+    {
+        $this->setEmbedManager($embedManager);
+    }
+
+    /**
      * @inheritDoc
      */
-    public function build(): EmbedProviderContract
+    public function boot(): EmbedProviderContract
     {
-        if ($this->isBuilt()) {
+        if ($this->isBooted()) {
             if (!$this->getAlias()) {
                 throw new LogicException('Missing alias');
-            } elseif (!$this->embedManager() instanceof EmbedManager) {
+            } elseif (!$this->embedManager() instanceof EmbedContract) {
                 throw new LogicException('Invalid related EmbedManager');
             }
 
             $this->parseParams();
 
-            $this->setBuilt();
+            $this->setBooted();
         }
 
         return $this;
@@ -64,27 +66,9 @@ class EmbedBaseProvider implements EmbedProviderContract
     /**
      * @inheritDoc
      */
-    public function embedManager(): EmbedManager
-    {
-        return $this->embedManager;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function setAlias(string $alias): EmbedProviderContract
     {
         $this->alias = $alias;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setEmbedManager(EmbedManager $embedManager): EmbedProviderContract
-    {
-        $this->embedManager = $embedManager;
 
         return $this;
     }

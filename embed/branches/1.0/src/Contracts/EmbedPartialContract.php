@@ -2,10 +2,12 @@
 
 namespace Pollen\Embed\Contracts;
 
+use tiFy\Contracts\Partial\PartialDriver;
+
 /**
  * @mixin \Pollen\Embed\EmbedAwareTrait
  */
-interface EmbedAdapter
+interface EmbedPartialContract extends PartialDriver
 {
 
 }

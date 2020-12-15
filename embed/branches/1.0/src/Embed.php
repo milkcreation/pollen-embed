@@ -2,24 +2,28 @@
 
 namespace Pollen\Embed;
 
-use LogicException, RuntimeException;
+use Exception, InvalidArgumentException, RuntimeException;
 use Embed\Embed as EmbedApi;
-use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
-use Pollen\Embed\Contracts\EmbedAdapter;
-use Pollen\Embed\Contracts\EmbedFactory as EmbedFactoryContract;
-use Pollen\Embed\Contracts\EmbedField as EmbedFieldContract;
-use Pollen\Embed\Contracts\EmbedPartial as EmbedPartialContract;
-use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
-use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
-use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
-use Pollen\Embed\Contracts\EmbedPinterestProvider as EmbedPinterestProviderContract;
-use Pollen\Embed\Contracts\EmbedVideoFactory as EmbedVideoFactoryContract;
-use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
-use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
-use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
-use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
+use Pollen\Embed\Contracts\EmbedContract;
+use Pollen\Embed\Contracts\EmbedAdapterContract;
+use Pollen\Embed\Contracts\EmbedFactoryContract;
+use Pollen\Embed\Contracts\EmbedProviderContract;
 use Pollen\Embed\Field\EmbedField;
 use Pollen\Embed\Partial\EmbedPartial;
+use Pollen\Embed\Providers\EmbedFacebookProvider;
+use Pollen\Embed\Providers\EmbedFacebookProviderInterface;
+use Pollen\Embed\Providers\EmbedInstagramProvider;
+use Pollen\Embed\Providers\EmbedInstagramProviderInterface;
+use Pollen\Embed\Providers\EmbedPinterestProvider;
+use Pollen\Embed\Providers\EmbedPinterestProviderInterface;
+use Pollen\Embed\Providers\EmbedVideoFactoryInterface;
+use Pollen\Embed\Providers\EmbedVideoProvider;
+use Pollen\Embed\Providers\EmbedVideoProviderInterface;
+use Pollen\Embed\Providers\EmbedVimeoProvider;
+use Pollen\Embed\Providers\EmbedVimeoProviderInterface;
+use Pollen\Embed\Providers\EmbedYoutubeFactoryInterface;
+use Pollen\Embed\Providers\EmbedYoutubeProvider;
+use Pollen\Embed\Providers\EmbedYoutubeProviderInterface;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
@@ -31,8 +35,9 @@ use tiFy\Support\MimeTypes;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Field;
 use tiFy\Support\Proxy\Storage;
+use tiFy\Routing\UrlFactory;
 
-class Embed implements EmbedManagerContract
+class Embed implements EmbedContract
 {
     use BootableTrait, ContainerAwareTrait;
 
@@ -56,23 +61,65 @@ class Embed implements EmbedManagerContract
 
     /**
      * Instance de l'adapteur associé
-     * @var EmbedAdapter|null
+     * @var EmbedAdapterContract|null
      */
     protected $adapter;
 
     /**
-     * Lise des fournisseurs de services déclarés.
+     * Liste des champs par défaut.
+     * @var string[][]
+     */
+    protected $defaultFields = [
+        'embed'  => EmbedField::class
+    ];
+
+    /**
+     * Liste des portions d'affichage par défaut.
+     * @var string[][]
+     */
+    protected $defaultPartials = [
+        'embed'  => EmbedPartial::class
+    ];
+
+    /**
+     * Liste des fournisseurs de services par défaut.
+     * @var string[][]
+     */
+    protected $defaultProviders = [
+        'facebook'  => EmbedFacebookProvider::class,
+        'instagram' => EmbedInstagramProvider::class,
+        'pinterest' => EmbedPinterestProvider::class,
+        'video'     => EmbedVideoProvider::class,
+        'vimeo'     => EmbedVimeoProvider::class,
+        'youtube'   => EmbedYoutubeProvider::class,
+    ];
+
+    /**
+     * Cartographie des url d'accès aux données oEmbed des fournisseurs de service
+     * @var array|null
+     */
+    protected $oembedEndpointsMap;
+
+    /**
+     * Liste des fournisseurs de services déclarés.
      * @var EmbedProviderContract[]|array
      */
-    protected $registeredProviders = [];
+    protected $providers = [];
+
+    /**
+     * Liste des définition de fournisseurs de services déclarés.
+     * @var EmbedProviderContract[]|array
+     */
+    protected $providerDefinitions = [];
 
     /**
      * @param array $config
      * @param Container|null $container
-     * @param EmbedAdapter|null $adapter
+     * @param EmbedAdapterContract|null $adapter
+     *
      * @return void
      */
-    public function __construct(array $config = [], Container $container = null, EmbedAdapter $adapter = null)
+    public function __construct(array $config = [], Container $container = null, EmbedAdapterContract $adapter = null)
     {
         $this->setConfig($config);
 
@@ -80,7 +127,7 @@ class Embed implements EmbedManagerContract
             $this->setContainer($container);
         }
 
-        if($adapter !== null) {
+        if ($adapter !== null) {
             $this->setAdapter($adapter);
         }
 
@@ -92,7 +139,7 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
-    public static function instance(): EmbedManagerContract
+    public static function instance(): EmbedContract
     {
         if (self::$instance instanceof self) {
             return self::$instance;
@@ -103,21 +150,31 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
-    public function boot(): EmbedManagerContract
+    public function boot(): EmbedContract
     {
         if (!$this->isBooted()) {
-            Field::register('embed', $this->containerHas(EmbedFieldContract::class)
-                ? $this->containerGet(EmbedFieldContract::class) : new EmbedField($this)
-            );
+            foreach ($this->getDefaultProviders() as $alias => $abstract) {
+                $this->registerProvider($alias, $this->getContainer()->has($abstract)
+                    ? $abstract : new $abstract($this)
+                );
+            }
 
+            foreach ($this->getDefaultFields() as $alias => $abstract) {
+                Field::register('embed', $this->containerHas($abstract)
+                    ? $this->containerGet($abstract) : new $abstract($this)
+                );
+            }
+
+            /** @var PartialManagerContract $partialManager */
             $partialManager = ($this->containerHas(PartialManagerContract::class)
                 ? $this->containerGet(PartialManagerContract::class) : Partial::instance()
             );
 
-            /** @var PartialManagerContract $partialManager */
-            $partialManager->register('embed', $this->containerHas(EmbedPartialContract::class)
-                ? EmbedPartialContract::class : new EmbedPartial($this, $partialManager)
-            );
+            foreach ($this->getDefaultPartials() as $alias => $abstract) {
+                $partialManager->register($alias, $this->containerHas($abstract)
+                    ? $abstract : new $abstract($this, $partialManager)
+                );
+            }
 
             $this->setBooted();
         }
@@ -145,37 +202,82 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
-    public function dispatchFactory(string $url): ?EmbedFactoryContract
+    public function dispatchFactory(string $url): EmbedFactoryContract
     {
-        $reflector = new ReflectionClass(EmbedApi::class);
-        $ds = DIRECTORY_SEPARATOR;
-        $oembedPath = dirname($reflector->getFileName()). "{$ds}resources{$ds}oembed.php";
+        if ($this->getOEmbedEndpoint($url)) {
+            $extractor = (new EmbedApi())->get($url);
+            $alias = strtolower($extractor->providerName);
 
-        if (is_file($oembedPath)) {
-            $providers = require_once $oembedPath;
-
-            foreach($providers as $endpoint => $patterns) {
-                foreach($patterns as $pattern) {
-                    if (preg_match($pattern, $url)) {
-                        $oembed = $endpoint;
-                        break;
-                    }
+            if ($provider = $this->getProvider($alias)) {
+                try {
+                    return $provider->get($url)->setDatas($extractor);
+                } catch(Exception $e) {
+                    throw new RuntimeException($e->getMessage());
                 }
             }
-
-            if (isset($oembed)) {
-                $extractor = (new EmbedApi())->get($url);
-                if ($extractor->getOEmbed()->getEndpoint()) {
-                    $alias = strtolower($extractor->providerName);
-                    if ($provider = $this->getProvider($alias)) {
-                        return $provider->get($url)->setDatas($extractor);
-                    }
-                }
-            } else if (MimeTypes::inType($url, 'video')) {
+        } else {
+            if (MimeTypes::inType($url, 'video')) {
                 return $this->video($url);
             }
         }
+        throw new RuntimeException('Unable to find a match ProviderFactory');
+    }
 
+    /**
+     * @inheritDoc
+     */
+    public function getAdapter(): ?EmbedAdapterContract
+    {
+        return $this->adapter;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDefaultFields(): array
+    {
+        return array_merge($this->defaultFields, $this->getAdapter()->getDefaultFields() ?? []);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDefaultPartials(): array
+    {
+        return array_merge($this->defaultPartials, $this->getAdapter()->getDefaultPartials() ?? []);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDefaultProviders(): array
+    {
+        return array_merge($this->defaultProviders, $this->getAdapter()->getDefaultProviders() ?? []);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOEmbedEndpoint(string $url, array $params = []): ?string
+    {
+        if (is_null($this->oembedEndpointsMap)) {
+            try {
+                $reflector = new ReflectionClass(EmbedApi::class);
+                $ds = DIRECTORY_SEPARATOR;
+                $this->oembedEndpointsMap = require_once dirname($reflector->getFileName()) .
+                    "{$ds}resources{$ds}oembed.php";
+            } catch (Exception $e) {
+                $this->oembedEndpointsMap = [];
+            }
+        }
+
+        foreach ($this->oembedEndpointsMap as $endpoint => $patterns) {
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $url)) {
+                    return (new UrlFactory($endpoint))->with(['format' => 'json', 'url' => $url])->render();
+                }
+            }
+        }
         return null;
     }
 
@@ -184,7 +286,31 @@ class Embed implements EmbedManagerContract
      */
     public function getProvider(string $alias): ?EmbedProviderContract
     {
-        return $this->registeredProviders[$alias] ?? null;
+        if (isset($this->providers[$alias])) {
+            return $this->providers[$alias];
+        }
+
+        if (!$def = $this->providerDefinitions[$alias] ?? null) {
+            throw new InvalidArgumentException(sprintf('EmbedProvider with alias [%s] unavailable', $alias));
+        }
+
+        $params = [];
+
+        if (!$def instanceof EmbedProviderContract) {
+            $params = is_array($def) ? $def : [];
+            $provider = $this->containerHas($def) ? $this->containerGet($def) : new EmbedBaseProvider($this);
+        } else {
+            $provider = $def;
+        }
+
+        if (!$provider instanceof EmbedProviderContract) {
+            return null;
+        }
+
+        return $this->providers[$alias] = $provider
+            ->setAlias($alias)
+            ->setParams(array_merge($this->config("providers.{$alias}", []), $params))
+            ->boot();
     }
 
     /**
@@ -201,33 +327,17 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
-    public function registerProvider(string $alias, $providerDefinition = []): EmbedProviderContract
+    public function registerProvider(string $alias, $providerDefinition = []): EmbedContract
     {
-        $params = [];
+        $this->providerDefinitions[$alias] = $providerDefinition;
 
-        if (!$providerDefinition instanceof EmbedProviderContract) {
-            $params = $providerDefinition;
-
-            $provider = $this->containerHas(EmbedProviderContract::class)
-                ? $this->containerGet(EmbedProviderContract::class) : new EmbedBaseProvider();
-        } else {
-            $provider = $providerDefinition;
-        }
-
-        if (!$provider instanceof EmbedProviderContract) {
-            throw new LogicException('Invalid AddonDriver Declaration');
-        }
-
-        return $this->registeredProviders[$alias] = $provider
-            ->setAlias($alias)
-            ->setParams(array_merge($this->config("providers.{$alias}", []), $params))
-            ->build();
+        return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function setAdapter(EmbedAdapter $adapter): EmbedManagerContract
+    public function setAdapter(EmbedAdapterContract $adapter): EmbedContract
     {
         $this->adapter = $adapter->setEmbedManager($this);
 
@@ -237,19 +347,9 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
-    public function setConfig(array $attrs): EmbedManagerContract
+    public function setConfig(array $attrs): EmbedContract
     {
         $this->config($attrs);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setProvider(string $alias, $providerDefinition = []): EmbedManagerContract
-    {
-        $this->registerProvider($alias, $providerDefinition);
 
         return $this;
     }
@@ -261,7 +361,7 @@ class Embed implements EmbedManagerContract
     {
         $provider = $this->getProvider('facebook');
 
-        if ($provider instanceof EmbedFacebookProviderContract) {
+        if ($provider instanceof EmbedFacebookProviderInterface) {
             return $provider->get($url);
         }
 
@@ -275,7 +375,7 @@ class Embed implements EmbedManagerContract
     {
         $provider = $this->getProvider('instagram');
 
-        if ($provider instanceof EmbedInstagramProviderContract) {
+        if ($provider instanceof EmbedInstagramProviderInterface) {
             return $provider->get($url);
         }
 
@@ -289,7 +389,7 @@ class Embed implements EmbedManagerContract
     {
         $provider = $this->getProvider('pinterest');
 
-        if ($provider instanceof EmbedPinterestProviderContract) {
+        if ($provider instanceof EmbedPinterestProviderInterface) {
             return $provider->get($url);
         }
 
@@ -299,11 +399,11 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
-    public function video(string $url): EmbedVideoFactoryContract
+    public function video(string $url): EmbedVideoFactoryInterface
     {
         $provider = $this->getProvider('video');
 
-        if ($provider instanceof EmbedVideoProviderContract) {
+        if ($provider instanceof EmbedVideoProviderInterface) {
             return $provider->get($url);
         }
 
@@ -317,7 +417,7 @@ class Embed implements EmbedManagerContract
     {
         $provider = $this->getProvider('vimeo');
 
-        if ($provider instanceof EmbedVimeoProviderContract) {
+        if ($provider instanceof EmbedVimeoProviderInterface) {
             return $provider->get($url);
         }
 
@@ -327,11 +427,11 @@ class Embed implements EmbedManagerContract
     /**
      * @inheritDoc
      */
-    public function youtube(string $url): EmbedYoutubeFactoryContract
+    public function youtube(string $url): EmbedYoutubeFactoryInterface
     {
         $provider = $this->getProvider('youtube');
 
-        if ($provider instanceof EmbedYoutubeProviderContract) {
+        if ($provider instanceof EmbedYoutubeProviderInterface) {
             return $provider->get($url);
         }
 

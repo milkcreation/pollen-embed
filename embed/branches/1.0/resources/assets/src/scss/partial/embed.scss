@@ -1,3 +1,51 @@
+// Variables
+$embed-oops-background-color: #F4F4F4 !default;
+$embed-oops-color: #C4C4C4 !default;
+
+// Dépendances
 @import "~video.js/dist/video-js.css";
 @import "~@videojs/themes/dist/city/index.css";
+
+// Personnalisation
+.Embed-wrapper--responsive {
+  position:relative;
+  width:100%;
+  height:0;
+
+  .Embed--oops {
+    position:absolute;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+  }
+}
+
+.Embed--oops {
+  overflow: hidden;
+  text-align: center;
+  background-color:$embed-oops-background-color;
+}
+
+.EmbedOops-wrapper {
+  position:absolute;
+  top:50%;
+  right:0;
+  left:0;
+  transform: translateY(-50%);
+}
+
+.EmbedOops-ico {
+  margin-bottom:15px;
+  svg {
+    fill:$embed-oops-color;
+    width:150px;
+    height: 150px;
+  }
+}
+
+.EmbedOops-notice {
+  font-size:20px;
+  color:$embed-oops-color;
+}
 

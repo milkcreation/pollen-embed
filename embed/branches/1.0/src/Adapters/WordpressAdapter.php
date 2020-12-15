@@ -2,7 +2,7 @@
 
 namespace Pollen\Embed\Adapters;
 
-use Pollen\Embed\Contracts\WordpressAdapter as WordpressAdapterContract;
+use Pollen\Embed\Contracts\WordpressAdapterContract;
 
 class WordpressAdapter extends AbstractEmbedAdapter implements WordpressAdapterContract
 {

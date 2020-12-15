@@ -2,8 +2,9 @@
 
 namespace Pollen\Embed\Field;
 
-use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
-use Pollen\Embed\Contracts\EmbedField as EmbedFieldContract;
+use Exception;
+use Pollen\Embed\Contracts\EmbedContract;
+use Pollen\Embed\Contracts\EmbedFieldContract;
 use Pollen\Embed\EmbedAwareTrait;
 use tiFy\Contracts\Routing\Route;
 use tiFy\Field\FieldDriver;
@@ -23,9 +24,9 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
     private $xhrUrl;
 
     /**
-     * @param EmbedManagerContract $embedManager
+     * @param EmbedContract $embedManager
      */
-    public function __construct(EmbedManagerContract $embedManager)
+    public function __construct(EmbedContract $embedManager)
     {
         $this->setEmbedManager($embedManager);
     }
@@ -47,9 +48,18 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
     {
         return array_merge(parent::defaults(), [
             /**
-             * @var string|null Clé d'indice d'enregistrement des données du fournisseur de service.
+             * @var array $provider_datas Données relatives au fournisseur de service.
              */
-            'provider_option_name' => null
+            'provider_datas' => [
+                /**
+                 * @var string|null Clé d'indice d'enregistrement.
+                 */
+                'name'  => null,
+                /**
+                 * @var mixed|null
+                 */
+                'value' => null,
+            ],
         ]);
     }
 
@@ -73,12 +83,13 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
         $this->set([
             'attrs.data-control' => 'embed-field',
             'attrs.data-options' => [
-                'ajax' => [
+                'ajax'           => [
                     'url'      => $this->getXhrUrl(),
                     'method'   => 'post',
                     'data'     => [],
                     'dataType' => 'json',
                 ],
+                'provider_datas' => $this->get('provider_datas'),
             ],
         ]);
 
@@ -107,25 +118,38 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
         if (!v::url()->validate($url)) {
             return [
                 'success' => false,
-                'data'    => Partial::get('notice', [
-                    'type'    => 'info',
-                    'content' => __('Pas une url', 'tify')
-                ])->render()
+                'data'    => [
+                    'render' => Partial::get('embed', ['url' => null])->render(),
+                ]
             ];
         }
 
-        if ($factory = $this->embedManager()->dispatchFactory($url)) {
+        try {
+            $factory = $this->embedManager()->dispatchFactory($url);
+
+            $datas = ['alias' => $factory->provider()->getAlias()];
+
+            try {
+                $oEmbed = $factory->getOEmbed();
+
+                $datas = array_merge($datas, $oEmbed->all(), ['endpoint' => (string)$oEmbed->getEndpoint()]);
+            } catch (Exception $e) {
+                unset($e);
+            }
+
             return [
                 'success' => true,
-                'data'    => Partial::get('embed', ['url' => $factory])->render()
+                'data'    => [
+                    'render' => Partial::get('embed', ['url' => $factory])->render(),
+                    'datas'  => $datas,
+                ],
             ];
-        } else {
+        } catch (Exception $e) {
             return [
                 'success' => false,
-                'data'    => Partial::get('notice', [
-                    'type'    => 'warning',
-                    'content' => __('Impossible de récupéré le contenu associé', 'tify')
-                ])->render()
+                'data'    => [
+                    'render' => Partial::get('embed', ['url' => null])->render(),
+                ]
             ];
         }
     }

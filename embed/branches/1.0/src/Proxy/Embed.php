@@ -2,32 +2,31 @@
 
 namespace Pollen\Embed\Proxy;
 
-use Pollen\Embed\Contracts\Embed as EmbedManager;
-use Pollen\Embed\Contracts\EmbedFactory;
-use Pollen\Embed\Contracts\EmbedVideoFactory;
-use Pollen\Embed\Contracts\EmbedYoutubeFactory;
-use Pollen\Embed\Contracts\EmbedProvider;
+use Pollen\Embed\Contracts\EmbedContract;
+use Pollen\Embed\Contracts\EmbedFactoryContract;
+use Pollen\Embed\Contracts\EmbedProviderContract;
+use Pollen\Embed\Providers\EmbedVideoFactoryInterface;
+use Pollen\Embed\Providers\EmbedYoutubeFactoryInterface;
 use tiFy\Support\Proxy\AbstractProxy;
 
 /**
- * @method static EmbedProvider|null getProvider(string $alias)
- * @method static EmbedFactory|null dispatchFactory(string $url)
- * @method static EmbedProvider registerProvider(string $alias, EmbedProvider|array $providerDefinition = [])
- * @method static EmbedManager setConfig(array $attrs)
- * @method static EmbedManager setProvider(array $attrs)
- * @method static EmbedFactory facebook(string $url)
- * @method static EmbedFactory instagram(string $url)
- * @method static EmbedFactory pinterest(string $url)
- * @method static EmbedVideoFactory video(string $url)
- * @method static EmbedFactory vimeo(string $url)
- * @method static EmbedYoutubeFactory youtube(string $url)
+ * @method static EmbedProviderContract|null getProvider(string $alias)
+ * @method static EmbedFactoryContract|null dispatchFactory(string $url)
+ * @method static EmbedContract registerProvider(string $alias, EmbedProviderContract|array $providerDefinition = [])
+ * @method static EmbedContract setConfig(array $attrs)
+ * @method static EmbedFactoryContract facebook(string $url)
+ * @method static EmbedFactoryContract instagram(string $url)
+ * @method static EmbedFactoryContract pinterest(string $url)
+ * @method static EmbedVideoFactoryInterface video(string $url)
+ * @method static EmbedFactoryContract vimeo(string $url)
+ * @method static EmbedYoutubeFactoryInterface youtube(string $url)
  */
 class Embed extends AbstractProxy
 {
     /**
      * {@inheritDoc}
      *
-     * @return mixed|object|EmbedManager
+     * @return EmbedContract|mixed|object
      */
     public static function getInstance()
     {
@@ -39,6 +38,6 @@ class Embed extends AbstractProxy
      */
     public static function getInstanceIdentifier(): string
     {
-        return EmbedManager::class;
+        return EmbedContract::class;
     }
 }

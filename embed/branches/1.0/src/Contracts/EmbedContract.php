@@ -3,6 +3,8 @@
 namespace Pollen\Embed\Contracts;
 
 use Exception;
+use Pollen\Embed\Providers\EmbedVideoFactoryInterface;
+use Pollen\Embed\Providers\EmbedYoutubeFactoryInterface;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Contracts\Support\ParamsBag;
 
@@ -10,7 +12,7 @@ use tiFy\Contracts\Support\ParamsBag;
  * @mixin \tiFy\Support\Concerns\BootableTrait
  * @mixin \tiFy\Support\Concerns\ContainerAwareTrait
  */
-interface Embed
+interface EmbedContract
 {
     /**
      * Récupération de l'instance courante.
@@ -19,7 +21,7 @@ interface Embed
      *
      * @throws Exception
      */
-    public static function instance(): Embed;
+    public static function instance(): EmbedContract;
 
     /**
      * Chargement.
@@ -28,7 +30,7 @@ interface Embed
      *
      * @throws Exception
      */
-    public function boot(): Embed;
+    public function boot(): EmbedContract;
 
     /**
      * Récupération de paramètre|Définition de paramètres|Instance du gestionnaire de paramètre.
@@ -45,28 +47,68 @@ interface Embed
      *
      * @param string $url
      *
-     * @return EmbedProvider|null
+     * @return EmbedFactoryContract
+     *
+     * @throws Exception
      */
-    public function dispatchFactory(string $url): ?EmbedFactory;
+    public function dispatchFactory(string $url): EmbedFactoryContract;
+
+    /**
+     * Récupération de l'instance de l'adapteur.
+     *
+     * @return EmbedAdapterContract|null
+     */
+    public function getAdapter(): ?EmbedAdapterContract;
+
+    /**
+     * Récupération des champs par défaut.
+     *
+     * @return array
+     */
+    public function getDefaultFields(): array;
+
+    /**
+     * Récupération des portions d'affichage par défaut.
+     *
+     * @return array
+     */
+    public function getDefaultPartials(): array;
+
+    /**
+     * Récupération des fournisseurs de services par défaut.
+     *
+     * @return array
+     */
+    public function getDefaultProviders(): array;
+
+    /**
+     * Récupération de l'url d'accès aux données embarquées d'un contenu distribué par un fournisseur de service.
+     *
+     * @param string $url Url du contenu distribué
+     * @param array $params Liste des paramètres d'url complémentaires
+     *
+     * @return string
+     */
+    public function getOEmbedEndpoint(string $url, array $params = []): ?string;
 
     /**
      * Récupération d'un fournisseur de service selon son nom de qualification.
      *
      * @param string $alias
      *
-     * @return EmbedProvider|null
+     * @return EmbedProviderContract|null
      */
-    public function getProvider(string $alias): ?EmbedProvider;
+    public function getProvider(string $alias): ?EmbedProviderContract;
 
     /**
      * Déclaration d'un fournisseur de service.
      *
      * @param string $alias
-     * @param EmbedProvider|array $providerDefinition
+     * @param EmbedProviderContract|string|array $providerDefinition
      *
-     * @return EmbedProvider
+     * @return EmbedContract
      */
-    public function registerProvider(string $alias, $providerDefinition = []): EmbedProvider;
+    public function registerProvider(string $alias, $providerDefinition = []): EmbedContract;
 
     /**
      * Chemin absolu vers une ressources (fichier|répertoire).
@@ -82,11 +124,11 @@ interface Embed
     /**
      * Définition de l'adapteur associé.
      *
-     * @param EmbedAdapter $adapter
+     * @param EmbedAdapterContract $adapter
      *
      * @return static
      */
-    public function setAdapter(EmbedAdapter $adapter): Embed;
+    public function setAdapter(EmbedAdapterContract $adapter): EmbedContract;
 
     /**
      * Définition des paramètres de configuration.
@@ -95,69 +137,59 @@ interface Embed
      *
      * @return static
      */
-    public function setConfig(array $attrs): Embed;
-
-    /**
-     * Définition d'un fournisseur de service.
-     *
-     * @param string $alias
-     * @param EmbedProvider|array $providerDefinition
-     *
-     * @return static
-     */
-    public function setProvider(string $alias, $providerDefinition = []): Embed;
+    public function setConfig(array $attrs): EmbedContract;
 
     /**
      * Récupération d'une instance de service fourni par Facebook.
      *
      * @param string $url
      *
-     * @return EmbedFactory
+     * @return EmbedFactoryContract
      */
-    public function facebook(string $url): EmbedFactory;
+    public function facebook(string $url): EmbedFactoryContract;
 
     /**
      * Récupération d'une instance de service fourni par Instagram.
      *
      * @param string $url
      *
-     * @return EmbedFactory
+     * @return EmbedFactoryContract
      */
-    public function instagram(string $url): EmbedFactory;
+    public function instagram(string $url): EmbedFactoryContract;
 
     /**
      * Récupération d'une instance de service fourni par Pinterest.
      *
      * @param string $url
      *
-     * @return EmbedFactory
+     * @return EmbedFactoryContract
      */
-    public function pinterest(string $url): EmbedFactory;
+    public function pinterest(string $url): EmbedFactoryContract;
 
     /**
      * Récupération d'une instance de service d'une video.
      *
      * @param string $url
      *
-     * @return EmbedVideoFactory
+     * @return EmbedVideoFactoryInterface
      */
-    public function video(string $url): EmbedVideoFactory;
+    public function video(string $url): EmbedVideoFactoryInterface;
 
     /**
      * Récupération d'une instance de service fourni par Vimeo.
      *
      * @param string $url
      *
-     * @return EmbedFactory
+     * @return EmbedFactoryContract
      */
-    public function vimeo(string $url): EmbedFactory;
+    public function vimeo(string $url): EmbedFactoryContract;
 
     /**
      * Récupération d'une instance de service fourni par Youtube.
      *
      * @param string $url
      *
-     * @return EmbedYoutubeFactory
+     * @return EmbedYoutubeFactoryInterface
      */
-    public function youtube(string $url): EmbedYoutubeFactory;
+    public function youtube(string $url): EmbedYoutubeFactoryInterface;
 }

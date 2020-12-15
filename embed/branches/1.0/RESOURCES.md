@@ -16,3 +16,7 @@
 - [Best Practices](https://blog.videojs.com/autoplay-best-practices-with-video-js/)
 - [Safari Policies](https://webkit.org/blog/7734/auto-play-policy-changes-for-macos/)
 - [Chrome Policies](https://developers.google.com/web/updates/2017/09/autoplay-policy-changes)
+
+## Public Test videos
+
+- [Github jsturgis](https://gist.github.com/jsturgis/3b19447b304616f18657)

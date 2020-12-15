@@ -2,10 +2,9 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
 use Pollen\Embed\EmbedBaseProvider;
 
-class EmbedFacebookProvider extends EmbedBaseProvider implements EmbedFacebookProviderContract
+class EmbedFacebookProvider extends EmbedBaseProvider implements EmbedFacebookProviderInterface
 {
 
 }

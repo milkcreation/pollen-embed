@@ -3,13 +3,11 @@
 namespace Pollen\Embed\Providers;
 
 use RuntimeException;
-use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
-use Pollen\Embed\Contracts\EmbedYoutubeFactory as EmbedYoutubeFactoryContract;
-use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
+use Pollen\Embed\Contracts\EmbedProviderContract;
 use Pollen\Embed\EmbedBaseFactory;
 use tiFy\Support\Proxy\Url;
 
-class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactoryContract
+class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactoryInterface
 {
     /**
      * Url des données embarquées.
@@ -72,7 +70,7 @@ class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactor
      */
     public function getEmbedUrl(): string
     {
-        $baseEmbedUrl = $this->baseEmbedUrl ?? $this->url;
+        $baseEmbedUrl = $this->baseEmbedUrl ?? $this->getUrl();
 
         return Url::set($baseEmbedUrl)->appendSegment($this->getVideoId())->with($this->params()->all())->render();
     }
@@ -83,7 +81,7 @@ class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactor
     public function getVideoId(): ?string
     {
         if ($this->videoId === null) {
-            $this->videoId = $this->provider()->fetchVideoIdFromUrl($this->url);
+            $this->videoId = $this->provider()->fetchVideoIdFromUrl($this->getUrl());
         }
         return $this->videoId;
     }
@@ -104,7 +102,7 @@ class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactor
     /**
      * {@inheritDoc}
      *
-     * @return EmbedYoutubeProviderContract
+     * @return EmbedYoutubeProviderInterface
      */
     public function provider(): EmbedProviderContract
     {

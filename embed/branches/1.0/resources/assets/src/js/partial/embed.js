@@ -15,7 +15,8 @@ jQuery(function ($) {
     xhr: undefined,
     options: {},
     controls: {},
-    player: undefined,
+    handler: undefined,
+    provider:undefined,
 
     // INITIALISATION
     // -----------------------------------------------------------------------------------------------------------------
@@ -27,81 +28,104 @@ jQuery(function ($) {
 
       this.el.attr('data-control', 'embed-loaded');
 
-      this._initOptions()
-      this._initEvents()
-      this._initControls()
+      this._initOptions(this)
+      this._initEvents(this)
+      this._initControls(this)
     },
     // Initialisation des attributs de configuration.
-    _initOptions: function () {
+    _initOptions: (self) => {
       $.extend(
           true,
-          this.options,
-          this.el.data('options') && $.parseJSON(decodeURIComponent(this.el.data('options'))) || {}
+          self.options,
+          self.el.data('options') && $.parseJSON(decodeURIComponent(self.el.data('options'))) || {}
       )
     },
-    _initEvents: function () {
+    _initEvents: (self) => {
       let events = {}
 
-      this._on(this.el, events)
+      self._on(self.el, events)
     },
-    _initControls: function () {
-      let self = this
+    _initControls: (self) => {
+      self.provider = self.el.data('provider')
 
-      if (self.player === undefined) {
-        let playerID = this.el.attr('id'),
-            provider = this.el.data('provider'),
-            videoParams = this.el.data('video-params') || undefined
+      switch (self.provider) {
+        case 'defered' :
+          let ajax = self.option('ajax')
 
-        if (!playerID) {
-          playerID = 'Embed--' + this.uuid
-          this.el.attr('id', playerID)
-        }
+          $.ajax(ajax).done((resp) => {
+            self.el.replaceWith(resp.data)
 
-        if (videoParams) {
-          videoParams = $.parseJSON(decodeURIComponent(videoParams)) || {}
-        } else {
-          videoParams = {}
-        }
+            if (resp.success) {
+              self.provider = self.el.data('provider')
+              self._doProviderInit(self)
+            }
+          })
 
-        switch (provider) {
-          case 'video' :
-            self.player = new VideoJs(playerID, videoParams)
-            /**
-             * @see https://blog.videojs.com/autoplay-best-practices-with-video-js/
-             */
-            self.player.ready(() => {
-              if (videoParams.autoplay) {
-                canAutoPlay.video().then(({result, error}) => {
-                  if (result === true) {
-                    self.player.play()
-                  } else {
-                    console.log(error)
-                  }
-                })
-              }
-            })
-            break;
-          case 'youtube':
-            let videoId = this.el.data('video-id')
-
-            self.player = new YouTubePlayer(playerID, {videoId: videoId, playerVars: videoParams})
-            self.player.on('ready', (e) => {
-              let player = e.target
-              player.mute()
-              if (videoParams.autoplay) {
-                player.playVideo()
-              }
-            })
-            break
-        }
+          break;
+        default :
+          self._doProviderInit(self)
+          break
       }
-    }
+    },
     // EVENEMENTS
     // -----------------------------------------------------------------------------------------------------------------
 
     // ACTIONS
     // -----------------------------------------------------------------------------------------------------------------
+    _doProviderInit: (self) => {
+      let id = self.el.attr('id'),
+          params = self.el.data('params') || undefined
 
+      params = params ? $.parseJSON(decodeURIComponent(params)) || {} : {}
+
+      if (!id) {
+        id = 'Embed--' + self.uuid
+        self.el.attr('id', id)
+      }
+
+      switch(self.provider) {
+        case 'video' :
+          self.handler = new VideoJs(id, params)
+          /**
+           * @see https://blog.videojs.com/autoplay-best-practices-with-video-js/
+           */
+          self.handler.ready(() => {
+            if (params.autoplay) {
+              self.handler.muted(true)
+
+              canAutoPlay.video().then(({result, error}) => {
+                if (result === true) {
+                  self.handler.play()
+                } else {
+                  console.log(error)
+                }
+              })
+            }
+          })
+          break;
+        case 'youtube' :
+          let videoId = self.el.data('video-id')
+
+          self.handler = new YouTubePlayer(id, {videoId: videoId, playerVars: params})
+          self.handler.on('ready', (e) => {
+            let player = e.target
+
+            if (params.autoplay) {
+              player.mute()
+              player.playVideo()
+            }
+          })
+
+          if (params.loop) {
+            self.handler.on('stateChange', function (state) {
+              if (state.data === 0) {
+                self.handler.playVideo()
+              }
+            })
+          }
+          break
+      }
+    }
     // ACCESSEURS
     // -----------------------------------------------------------------------------------------------------------------
 

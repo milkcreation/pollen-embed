@@ -2,11 +2,12 @@
 
 namespace Pollen\Embed;
 
-use BadMethodCallException, Exception, InvalidArgumentException;
+use BadMethodCallException, Exception, Error, InvalidArgumentException;
 use Embed\Embed as DelegateApiDriver;
 use Embed\Extractor;
-use Pollen\Embed\Contracts\EmbedFactory as EmbedFactoryContract;
-use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
+use Pollen\Embed\Contracts\EmbedFactoryContract;
+use Pollen\Embed\Contracts\EmbedProviderContract;
+use StdClass;
 use tiFy\Support\Concerns\ParamsBagTrait;
 use tiFy\Support\Proxy\Partial;
 use tiFy\Support\Proxy\Url;
@@ -17,12 +18,6 @@ use tiFy\Support\Proxy\Url;
 class EmbedBaseFactory implements EmbedFactoryContract
 {
     use ParamsBagTrait;
-
-    /**
-     * Liste des données associés.
-     * @var Extractor|object|array
-     */
-    private $datas;
 
     /**
      * Instance du fournisseur de service associé.
@@ -38,7 +33,7 @@ class EmbedBaseFactory implements EmbedFactoryContract
 
     /**
      * Instance du pilote de délégation de l'api.
-     * @var object|null
+     * @var Extractor|object|null
      */
     protected $delegateApiDriver;
 
@@ -64,7 +59,7 @@ class EmbedBaseFactory implements EmbedFactoryContract
     public function __get(string $offset)
     {
         try {
-            return $this->delegateApiDriver()->get($this->url)->{$offset};
+            return $this->delegateApiDriver()->{$offset};
         } catch (Exception $e) {
             throw new InvalidArgumentException(sprintf('Unvavailable [%s] DelegateApiDriver argument', $offset));
         }
@@ -76,8 +71,8 @@ class EmbedBaseFactory implements EmbedFactoryContract
     public function __call(string $method, array $arguments)
     {
         try {
-            return $this->delegateApiDriver()->get($this->url)->{$method}(... $arguments);
-        } catch (Exception $e) {
+            return $this->delegateApiDriver()->{$method}(... $arguments);
+        } catch (Error $e) {
             throw new BadMethodCallException($e->getMessage());
         }
     }
@@ -88,9 +83,9 @@ class EmbedBaseFactory implements EmbedFactoryContract
     public function delegateApiDriver(): object
     {
         if ($this->delegateApiDriver === null) {
-            $this->delegateApiDriver = new DelegateApiDriver();
+            $this->delegateApiDriver = $this->isEmbeded()
+                ? (new DelegateApiDriver())->get($this->getUrl()) : new StdClass();
         }
-
         return $this->delegateApiDriver;
     }
 
@@ -99,7 +94,7 @@ class EmbedBaseFactory implements EmbedFactoryContract
      */
     public function getEmbedUrl(): string
     {
-        $baseEmbedUrl = $this->baseEmbedUrl ?? $this->url;
+        $baseEmbedUrl = $this->baseEmbedUrl ?? $this->getUrl();
 
         return Url::set($baseEmbedUrl)->with($this->params()->all())->render();
     }
@@ -107,13 +102,12 @@ class EmbedBaseFactory implements EmbedFactoryContract
     /**
      * @inheritDoc
      */
-    public function getDatas()
+    public function getOEmbedEndpoint(): ?string
     {
-        if ($this->datas === null) {
-            return $this->datas = $this->delegateApiDriver()->get($this->url);
+        if(!$endpoint = $this->provider()->embedManager()->getOEmbedEndpoint($this->getUrl())) {
+            $endpoint = ($oembed = $this->delegateApiDriver()->getOEmbed()) ? (string)$oembed->getEndpoint() : null;
         }
-
-        return $this->datas;
+        return $endpoint;
     }
 
     /**
@@ -122,6 +116,22 @@ class EmbedBaseFactory implements EmbedFactoryContract
     public function getProviderAlias(): string
     {
         return $this->provider()->getAlias();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEmbeded(): bool
+    {
+        return true;
     }
 
     /**

@@ -3,22 +3,22 @@
 namespace Pollen\Embed;
 
 use Exception;
-use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
+use Pollen\Embed\Contracts\EmbedContract;
 
 trait EmbedAwareTrait
 {
     /**
      * Instance du gestionnaire de données embarquées.
-     * @var EmbedManagerContract|null
+     * @var EmbedContract|null
      */
     private $embedManager;
 
     /**
      * Récupération de l'instance du gestionnaire de données embarquées.
      *
-     * @return EmbedManagerContract|null
+     * @return EmbedContract|null
      */
-    public function embedManager(): ?EmbedManagerContract
+    public function embedManager(): ?EmbedContract
     {
         if (is_null($this->embedManager)) {
             try {
@@ -34,11 +34,11 @@ trait EmbedAwareTrait
     /**
      * Définition du gestionnaire de données embarquées.
      *
-     * @param EmbedManagerContract $embedManager
+     * @param EmbedContract $embedManager
      *
      * @return static
      */
-    public function setEmbedManager(EmbedManagerContract $embedManager): self
+    public function setEmbedManager(EmbedContract $embedManager): self
     {
         $this->embedManager = $embedManager;
 

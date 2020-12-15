@@ -3,17 +3,17 @@
 namespace Pollen\Embed;
 
 use Pollen\Embed\Adapters\WordpressAdapter;
-use Pollen\Embed\Contracts\Embed as EmbedManagerContract;
-use Pollen\Embed\Contracts\EmbedFacebookProvider as EmbedFacebookProviderContract;
-use Pollen\Embed\Contracts\EmbedInstagramProvider as EmbedInstagramProviderContract;
-use Pollen\Embed\Contracts\EmbedPartial as EmbedPartialContract;
-use Pollen\Embed\Contracts\EmbedPinterestProvider as EmbedPinterestProviderContract;
-use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
-use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
-use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
-use Pollen\Embed\Contracts\EmbedYoutubeProvider as EmbedYoutubeProviderContract;
-use Pollen\Embed\Contracts\EmbedField as EmbedFieldContract;
-use Pollen\Embed\Contracts\WordpressAdapter as WordpressAdapterContract;
+use Pollen\Embed\Contracts\EmbedContract;
+use Pollen\Embed\Contracts\EmbedPartialContract;
+use Pollen\Embed\Contracts\EmbedProviderContract;
+use Pollen\Embed\Contracts\EmbedFieldContract;
+use Pollen\Embed\Contracts\WordpressAdapterContract;
+use Pollen\Embed\Providers\EmbedFacebookProviderInterface;
+use Pollen\Embed\Providers\EmbedInstagramProviderInterface;
+use Pollen\Embed\Providers\EmbedPinterestProviderInterface;
+use Pollen\Embed\Providers\EmbedVideoProviderInterface;
+use Pollen\Embed\Providers\EmbedVimeoProviderInterface;
+use Pollen\Embed\Providers\EmbedYoutubeProviderInterface;
 use Pollen\Embed\Field\EmbedField;
 use Pollen\Embed\Partial\EmbedPartial;
 use Pollen\Embed\Providers\EmbedFacebookProvider;
@@ -28,34 +28,21 @@ use tiFy\Container\ServiceProvider as BaseServiceProvider;
 class EmbedServiceProvider extends BaseServiceProvider
 {
     /**
-     * Liste des fournisseurs de services par défaut.
-     * @var string[][]
-     */
-    protected $defaultProviders = [
-        'facebook'  => EmbedFacebookProviderContract::class,
-        'instagram' => EmbedInstagramProviderContract::class,
-        'pinterest' => EmbedPinterestProviderContract::class,
-        'video'     => EmbedVideoProviderContract::class,
-        'vimeo'     => EmbedVimeoProviderContract::class,
-        'youtube'   => EmbedYoutubeProviderContract::class,
-    ];
-
-    /**
      * Liste des noms de qualification des services fournis.
      * {@internal Permet le chargement différé des services qualifié.}
      * @var string[]
      */
     protected $provides = [
-        EmbedManagerContract::class,
+        EmbedContract::class,
+        EmbedField::class,
+        EmbedPartial::class,
+        EmbedFacebookProvider::class,
+        EmbedInstagramProvider::class,
+        EmbedPinterestProvider::class,
         EmbedProviderContract::class,
-        EmbedFacebookProviderContract::class,
-        EmbedFieldContract::class,
-        EmbedInstagramProviderContract::class,
-        EmbedPartialContract::class,
-        EmbedPinterestProviderContract::class,
-        EmbedVideoProviderContract::class,
-        EmbedVimeoProviderContract::class,
-        EmbedYoutubeProviderContract::class,
+        EmbedVideoProvider::class,
+        EmbedVimeoProvider::class,
+        EmbedYoutubeProvider::class,
         WordpressAdapterContract::class
     ];
 
@@ -65,7 +52,7 @@ class EmbedServiceProvider extends BaseServiceProvider
     public function boot()
     {
         events()->listen('wp.booted', function () {
-            $this->getContainer()->get(EmbedManagerContract::class)
+            $this->getContainer()->get(EmbedContract::class)
                 ->setAdapter($this->getContainer()->get(WordpressAdapterContract::class))->boot();
         });
     }
@@ -75,15 +62,8 @@ class EmbedServiceProvider extends BaseServiceProvider
      */
     public function register(): void
     {
-        $this->getContainer()->share(EmbedManagerContract::class, function (): EmbedManagerContract {
-            $embed = new Embed(config('embed', []), $this->getContainer());
-
-            foreach ($this->defaultProviders as $alias => $abstract) {
-                if ($this->getContainer()->has($abstract)) {
-                    $embed->setProvider($alias, $this->getContainer()->get($abstract));
-                }
-            }
-            return $embed;
+        $this->getContainer()->share(EmbedContract::class, function (): EmbedContract {
+            return new Embed(config('embed', []), $this->getContainer());
         });
 
         $this->registerAdapters();
@@ -100,7 +80,7 @@ class EmbedServiceProvider extends BaseServiceProvider
     public function registerAdapters(): void
     {
         $this->getContainer()->share(WordpressAdapterContract::class, function (): WordpressAdapterContract {
-            return new WordpressAdapter();
+            return new WordpressAdapter($this->getContainer()->get(EmbedContract::class));
         });
     }
 
@@ -111,8 +91,8 @@ class EmbedServiceProvider extends BaseServiceProvider
      */
     public function registerFields(): void
     {
-        $this->getContainer()->add(EmbedFieldContract::class, function (): EmbedFieldContract {
-            return new EmbedField($this->getContainer()->get(EmbedManagerContract::class));
+        $this->getContainer()->add(EmbedField::class, function (): EmbedFieldContract {
+            return new EmbedField($this->getContainer()->get(EmbedContract::class));
         });
     }
 
@@ -123,9 +103,9 @@ class EmbedServiceProvider extends BaseServiceProvider
      */
     public function registerPartials(): void
     {
-        $this->getContainer()->add(EmbedPartialContract::class, function (): EmbedPartialContract {
+        $this->getContainer()->add(EmbedPartial::class, function (): EmbedPartialContract {
             return new EmbedPartial(
-                $this->getContainer()->get(EmbedManagerContract::class),
+                $this->getContainer()->get(EmbedContract::class),
                 $this->getContainer()->get(PartialManager::class)
             );
         });
@@ -139,31 +119,31 @@ class EmbedServiceProvider extends BaseServiceProvider
     public function registerProviders(): void
     {
         $this->getContainer()->add(EmbedProviderContract::class, function (): EmbedProviderContract {
-            return new EmbedBaseProvider();
+            return new EmbedBaseProvider($this->getContainer()->get(EmbedContract::class));
         });
 
-        $this->getContainer()->share(EmbedFacebookProviderContract::class, function (): EmbedFacebookProviderContract {
-            return new EmbedFacebookProvider();
+        $this->getContainer()->share(EmbedFacebookProvider::class, function (): EmbedFacebookProviderInterface {
+            return new EmbedFacebookProvider($this->getContainer()->get(EmbedContract::class));
         });
 
-        $this->getContainer()->share(EmbedInstagramProviderContract::class, function (): EmbedInstagramProviderContract {
-            return new EmbedInstagramProvider();
+        $this->getContainer()->share(EmbedInstagramProvider::class, function (): EmbedInstagramProviderInterface {
+            return new EmbedInstagramProvider($this->getContainer()->get(EmbedContract::class));
         });
 
-        $this->getContainer()->share(EmbedPinterestProviderContract::class, function (): EmbedPinterestProviderContract {
-            return new EmbedPinterestProvider();
+        $this->getContainer()->share(EmbedPinterestProvider::class, function (): EmbedPinterestProviderInterface {
+            return new EmbedPinterestProvider($this->getContainer()->get(EmbedContract::class));
         });
 
-        $this->getContainer()->share(EmbedVideoProviderContract::class, function (): EmbedVideoProviderContract {
-            return new EmbedVideoProvider();
+        $this->getContainer()->share(EmbedVideoProvider::class, function (): EmbedVideoProviderInterface {
+            return new EmbedVideoProvider($this->getContainer()->get(EmbedContract::class));
         });
 
-        $this->getContainer()->share(EmbedVimeoProviderContract::class, function (): EmbedVimeoProviderContract {
-            return new EmbedVimeoProvider();
+        $this->getContainer()->share(EmbedVimeoProvider::class, function (): EmbedVimeoProviderInterface {
+            return new EmbedVimeoProvider($this->getContainer()->get(EmbedContract::class));
         });
 
-        $this->getContainer()->share(EmbedYoutubeProviderContract::class, function (): EmbedYoutubeProviderContract {
-            return new EmbedYoutubeProvider();
+        $this->getContainer()->share(EmbedYoutubeProvider::class, function (): EmbedYoutubeProviderInterface {
+            return new EmbedYoutubeProvider($this->getContainer()->get(EmbedContract::class));
         });
     }
 }

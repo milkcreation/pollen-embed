@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Pollen\Embed\Contracts;
+namespace Pollen\Embed\Providers;
 
-interface EmbedVideoFactory extends EmbedFactory
+use Pollen\Embed\Contracts\EmbedFactoryContract;
+
+interface EmbedVideoFactoryInterface extends EmbedFactoryContract
 {
     /**
      * Récupération de la liste des sources vidéo.
@@ -18,5 +20,5 @@ interface EmbedVideoFactory extends EmbedFactory
      *
      * @return static
      */
-    public function setSource(string $src): EmbedVideoFactory;
+    public function setSource(string $src): EmbedVideoFactoryInterface;
 }

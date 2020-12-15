@@ -2,10 +2,9 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedVimeoProvider as EmbedVimeoProviderContract;
 use Pollen\Embed\EmbedBaseProvider;
 
-class EmbedVimeoProvider extends EmbedBaseProvider implements EmbedVimeoProviderContract
+class EmbedVimeoProvider extends EmbedBaseProvider implements EmbedVimeoProviderInterface
 {
 
 }

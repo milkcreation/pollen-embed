@@ -2,7 +2,7 @@
 
 namespace Pollen\Embed\Contracts;
 
-interface EmbedVimeoProvider extends EmbedProvider
+interface WordpressAdapterContract extends EmbedAdapterContract
 {
 
 }

@@ -2,12 +2,10 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedProvider as EmbedProviderContract;
-use Pollen\Embed\Contracts\EmbedVideoFactory as EmbedVideoFactoryContract;
-use Pollen\Embed\Contracts\EmbedVideoProvider as EmbedVideoProviderContract;
+use Pollen\Embed\Contracts\EmbedProviderContract;
 use Pollen\Embed\EmbedBaseFactory;
 
-class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryContract
+class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryInterface
 {
     /**
      * Liste des sources.
@@ -55,7 +53,7 @@ class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryCon
      */
     public function getEmbedUrl(): string
     {
-        return $this->url;
+        return $this->getUrl();
     }
 
     /**
@@ -67,6 +65,14 @@ class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryCon
             array_unshift($this->src, $this->url);
         }
         return $this->src;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEmbeded(): bool
+    {
+        return false;
     }
 
     /**
@@ -85,7 +91,7 @@ class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryCon
     /**
      * {@inheritDoc}
      *
-     * @return EmbedVideoProviderContract
+     * @return EmbedVideoProviderInterface
      */
     public function provider(): EmbedProviderContract
     {
@@ -95,7 +101,7 @@ class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryCon
     /**
      * @inheritDoc
      */
-    public function setSource(string $src): EmbedVideoFactoryContract
+    public function setSource(string $src): EmbedVideoFactoryInterface
     {
         array_push($this->src, $src);
 
