@@ -1,10 +1,15 @@
 // Variables
-$embed-oops-background-color: #F4F4F4 !default;
-$embed-oops-color: #C4C4C4 !default;
+$embed-background-color: #F4F4F4 !default;
+$embed-color: #C4C4C4 !default;
+$embed-oops-background-color: $embed-background-color !default;
+$embed-oops-color: $embed-color !default;
+$embed-defered-background-color: $embed-background-color !default;
+$embed-defered-color: $embed-color !default;
 
 // Dépendances
 @import "~video.js/dist/video-js.css";
 @import "~@videojs/themes/dist/city/index.css";
+@import "~presstify-framework/materials/spinner";
 
 // Personnalisation
 .Embed-wrapper--responsive {
@@ -49,3 +54,19 @@ $embed-oops-color: #C4C4C4 !default;
   color:$embed-oops-color;
 }
 
+@include materials-spinner(Embed-spinner);
+
+.Embed--defered {
+  background-color: $embed-defered-background-color;
+  color: $embed-defered-color;
+
+  .Embed-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 32px;
+    height: 32px;
+    margin-top:-16px;
+    margin-left: -16px;
+  }
+}

@@ -9,8 +9,9 @@ class WordpressEmbedField extends EmbedField
 {
     public function render(): string
     {
-        if ($this->view() instanceof PlatesEngine) {
-            $this->view()->addPath($this->embedManager()->resources('/views/field/embed.wp'), null, true);
+        $viewEngine = $this->view();
+        if (($viewEngine instanceof PlatesEngine) && !$viewEngine->getOverrideDir()) {
+            $viewEngine->addPath($this->embedManager()->resources('/views/field/embed.wp'));
         }
 
         return parent::render();

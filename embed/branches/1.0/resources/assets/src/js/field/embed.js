@@ -102,8 +102,9 @@ jQuery(function ($) {
         }
 
         self.preview.empty()
-        let ajax = $.extend(self.option('ajax'), {data: {value: value}})
+        let ajax = self.option('ajax')
 
+        ajax.data.url = value
         self.xhr = $.ajax(ajax)
             .done((resp) => {
               self.preview.html(resp.data.render)
@@ -116,19 +117,13 @@ jQuery(function ($) {
         self.value = value
       }
     }
-    // ACTIONS
-    // -----------------------------------------------------------------------------------------------------------------
-
-    // ACCESSEURS
-    // -----------------------------------------------------------------------------------------------------------------
-
   })
 
   $(document).ready(function () {
     $('[data-control="embed-field"]').pollenEmbedField()
-    /*
-    $.tify.observe('[data-control="embed"]', function (i, target) {
-      $(target).pollenEmbed()
-    }) */
+
+    $.tify.observe('[data-control="embed-field"]', function (i, target) {
+      $(target).pollenEmbedField()
+    })
   })
 })

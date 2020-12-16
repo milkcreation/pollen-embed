@@ -1,4 +1,7 @@
 <?php
+/**
+ * @var tiFy\Contracts\Partial\PartialView $this
+ */
 ?>
 <div class="Embed Embed--oops">
     <div class="EmbedOops-wrapper">
@@ -19,7 +22,7 @@
             </svg>
         </div>
         <div class="EmbedOops-notice">
-            <?php _e('Contenu indisponible', 'pollen-embed'); ?>
+            <?php echo $this->get('notice') ?: __('Contenu indisponible', 'pollen-embed'); ?>
         </div>
     </div>
 </div>

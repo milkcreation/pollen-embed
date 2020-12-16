@@ -66,6 +66,11 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
              * @var int
              */
             'height'     => 360,
+            /**
+             * Liste des fournisseurs de services autorisés.
+             * @var array
+             */
+            'providers'  => [],
         ]);
     }
 
@@ -74,6 +79,7 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
      */
     public function render(): string
     {
+        $originalParams = $this->all();
         $defer = $this->get('defer');
         $factory = null;
         $defered = false;
@@ -99,9 +105,8 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
         }
         $this->set(compact('ratio'));
 
-
         if (!$url = $this->pull('url')) {
-            $this->set('provider', 'oops');
+            $this->set('tmpl', 'oops');
 
             return parent::render();
         } elseif (!$url instanceof EmbedFactoryContract) {
@@ -118,9 +123,12 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
             }
         } else {
             $factory = $url;
-            if ($defer !== false) {
+
+            if ($defer === true) {
                 $url = $factory->getUrl();
                 $defered = true;
+            } else {
+                $defered = false;
             }
         }
 
@@ -133,38 +141,47 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
                     'ajax' => [
                         'method'   => 'post',
                         'url'      => $this->getXhrUrl(),
-                        'data'     => [
+                        'data'     => array_merge($originalParams, [
                             'url'    => $url,
-                            'params' => $this->get('params', []),
-                            'viewer' => $this->get('viewer'),
-                        ],
+                            'defer'  => false
+                        ]),
                         'dataType' => 'json',
                     ],
                 ],
-                'attrs.data-control'  => 'embed',
                 'attrs.data-provider' => $provider,
-                'provider'            => $provider,
+                'tmpl'                => 'defered',
             ]);
         } elseif ($factory instanceof EmbedFactoryContract) {
+            $providers = $this->pull('providers', []);
+            $provider = $factory->getProviderAlias();
+
+            if ($providers && !in_array($provider, $providers)) {
+                $this->set([
+                    'notice' => __('Fournisseur non autorisé', 'theme'),
+                    'tmpl'   => 'oops',
+                ]);
+                return parent::render();
+            } else {
+                $this->set([
+                    'attrs.data-provider' => $provider,
+                    'tmpl'                => $provider,
+                ]);
+            }
+
             $factory->setParams($this->get('params', []))->parseParams();
 
             $this->set('attrs.class', implode(' ',
                 array_filter([$this->get('attrs.class'), 'Embed--' . $factory->getProviderAlias()])
             ));
 
-            // VIDEO
             if ($factory instanceof EmbedVideoFactoryInterface) {
-                $provider = 'video';
                 $this->set('attrs.class', implode(' ', array_filter([
                     $this->get('attrs.class'),
                     'video-js vjs-default-skin vjs-big-play-centered',
                 ])));
 
                 $this->set([
-                    'attrs.data-control'  => 'embed',
-                    'attrs.data-provider' => $provider,
-                    'attrs.data-params'   => $factory->params()->all(),
-                    'provider'            => $provider,
+                    'attrs.data-params'  => $factory->params()->all(),
                 ]);
 
                 $this->push('attrs', 'controls');
@@ -179,27 +196,24 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
                         'tag'   => 'source',
                     ]);
                 }
-            }
-            // YOUTUBE
-            if ($factory instanceof EmbedYoutubeFactoryInterface) {
-                $provider = 'youtube';
-                $this->set([
-                    'attrs.data-provider' => 'youtube',
-                    'provider'            => $provider,
-                ]);
-
+            } elseif ($factory instanceof EmbedYoutubeFactoryInterface) {
                 if ($factory->params('fs')) {
                     $this->push('attrs', 'allowfullscreen');
                 }
 
                 if ($factory->params('enablejsapi')) {
                     $this->set([
-                        'attrs.data-control'  => 'embed',
                         'attrs.data-video-id' => $factory->getVideoId(),
                         'attrs.data-params'   => $factory->params()->all(),
                     ]);
                 }
             }
+        }
+
+        if (!$this->has('attrs.data-control')) {
+            $this->set('attrs.data-control', 'embed');
+        } else if(!$this->get('attrs.data-control')) {
+            $this->forget('attrs.data-control');
         }
 
         return parent::render();
@@ -223,8 +237,6 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
     public function xhrResponse(...$args): array
     {
         $url = Request::input('url');
-        $params = Request::input('params', []);
-        $this->set('viewer', Request::input('viewer', []));
 
         if (!v::url()->validate($url)) {
             return [
@@ -235,14 +247,13 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
 
         try {
             $factory = $this->embedManager()->dispatchFactory($url);
+            $this->params(array_merge(Request::all(), ['url' => $factory]));
 
             return [
                 'success' => true,
-                'data'    => $this->partialManager()->get('embed', [
-                    'url'    => $factory,
-                    'params' => $params,
-                    'defer'  => false,
-                ])->render(),
+                'return' => $this->all(),
+                'data'    =>$this->render(),
+
             ];
         } catch (Exception $e) {
             return [

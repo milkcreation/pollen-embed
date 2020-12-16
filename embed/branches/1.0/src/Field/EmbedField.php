@@ -60,6 +60,11 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
                  */
                 'value' => null,
             ],
+            /**
+             * Liste des fournisseurs de services autorisés.
+             * @var array
+             */
+            'providers'      => [],
         ]);
     }
 
@@ -86,7 +91,9 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
                 'ajax'           => [
                     'url'      => $this->getXhrUrl(),
                     'method'   => 'post',
-                    'data'     => [],
+                    'data'     => [
+                        'providers' => $this->get('providers'),
+                    ],
                     'dataType' => 'json',
                 ],
                 'provider_datas' => $this->get('provider_datas'),
@@ -113,14 +120,15 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
      */
     public function xhrResponse(...$args): array
     {
-        $url = trim(Request::input('value'));
+        $url = trim(Request::input('url'));
+        $providers = Request::input('providers', []);
 
         if (!v::url()->validate($url)) {
             return [
                 'success' => false,
                 'data'    => [
                     'render' => Partial::get('embed', ['url' => null])->render(),
-                ]
+                ],
             ];
         }
 
@@ -140,7 +148,10 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
             return [
                 'success' => true,
                 'data'    => [
-                    'render' => Partial::get('embed', ['url' => $factory])->render(),
+                    'render' => Partial::get('embed', [
+                        'url'       => $factory,
+                        'providers' => $providers,
+                    ])->render(),
                     'datas'  => $datas,
                 ],
             ];
@@ -149,7 +160,7 @@ class EmbedField extends FieldDriver implements EmbedFieldContract
                 'success' => false,
                 'data'    => [
                     'render' => Partial::get('embed', ['url' => null])->render(),
-                ]
+                ],
             ];
         }
     }

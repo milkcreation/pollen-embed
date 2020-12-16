@@ -4,6 +4,9 @@
 
 - [Embed Api Driver](https://github.com/oscarotero/Embed)
 
+- [video-js](https://docs.videojs.com)
+    - [Player Api](https://docs.videojs.com/docs/api/player.html)
+
 ## Providers
 
 ### Youtube
