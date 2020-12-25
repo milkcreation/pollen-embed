@@ -6,5 +6,4 @@ use Pollen\Embed\EmbedBaseProvider;
 
 class EmbedPinterestProvider extends EmbedBaseProvider implements EmbedPinterestProviderInterface
 {
-
 }

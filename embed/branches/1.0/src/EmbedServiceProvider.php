@@ -52,8 +52,9 @@ class EmbedServiceProvider extends BaseServiceProvider
     public function boot()
     {
         events()->listen('wp.booted', function () {
-            $this->getContainer()->get(EmbedContract::class)
-                ->setAdapter($this->getContainer()->get(WordpressAdapterContract::class))->boot();
+            /** @var EmbedContract $embed */
+            $embed = $this->getContainer()->get(EmbedContract::class);
+            $embed->setAdapter($this->getContainer()->get(WordpressAdapterContract::class))->boot();
         });
     }
 

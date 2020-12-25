@@ -9,5 +9,4 @@ use tiFy\Contracts\Partial\PartialDriver;
  */
 interface EmbedPartialContract extends PartialDriver
 {
-
 }

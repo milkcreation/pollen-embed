@@ -170,9 +170,16 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
 
             $factory->setParams($this->get('params', []))->parseParams();
 
-            $this->set('attrs.class', implode(' ',
-                array_filter([$this->get('attrs.class'), 'Embed--' . $factory->getProviderAlias()])
-            ));
+            $this->set(
+                'attrs.class',
+                implode(
+                    ' ',
+                    array_filter([
+                        $this->get('attrs.class'),
+                        'Embed--' . $factory->getProviderAlias()
+                    ])
+                )
+            );
 
             if ($factory instanceof EmbedVideoFactoryInterface) {
                 $this->set('attrs.class', implode(' ', array_filter([
@@ -212,7 +219,7 @@ class EmbedPartial extends BasePartialDriver implements EmbedPartialContract
 
         if (!$this->has('attrs.data-control')) {
             $this->set('attrs.data-control', 'embed');
-        } else if(!$this->get('attrs.data-control')) {
+        } elseif (!$this->get('attrs.data-control')) {
             $this->forget('attrs.data-control');
         }
 

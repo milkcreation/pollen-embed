@@ -6,5 +6,4 @@ use Pollen\Embed\EmbedBaseProvider;
 
 class EmbedVimeoProvider extends EmbedBaseProvider implements EmbedVimeoProviderInterface
 {
-
 }

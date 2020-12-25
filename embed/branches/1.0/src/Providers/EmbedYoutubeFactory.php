@@ -91,7 +91,7 @@ class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactor
      */
     public function parseParams(): self
     {
-        foreach($this->params() as $key => $value) {
+        foreach ($this->params() as $key => $value) {
             if ($value === null) {
                 $this->params()->forget($key);
             }

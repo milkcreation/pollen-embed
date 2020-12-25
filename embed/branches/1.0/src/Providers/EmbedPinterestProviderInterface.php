@@ -6,5 +6,4 @@ use Pollen\Embed\Contracts\EmbedProviderContract;
 
 interface EmbedPinterestProviderInterface extends EmbedProviderContract
 {
-
 }

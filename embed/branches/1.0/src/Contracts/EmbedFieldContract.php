@@ -9,5 +9,4 @@ use tiFy\Contracts\Field\FieldDriver;
  */
 interface EmbedFieldContract extends FieldDriver
 {
-
 }

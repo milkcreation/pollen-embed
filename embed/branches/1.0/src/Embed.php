@@ -2,7 +2,9 @@
 
 namespace Pollen\Embed;
 
-use Exception, InvalidArgumentException, RuntimeException;
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
 use Embed\Embed as EmbedApi;
 use Pollen\Embed\Contracts\EmbedContract;
 use Pollen\Embed\Contracts\EmbedAdapterContract;
@@ -115,20 +117,15 @@ class Embed implements EmbedContract
     /**
      * @param array $config
      * @param Container|null $container
-     * @param EmbedAdapterContract|null $adapter
      *
      * @return void
      */
-    public function __construct(array $config = [], Container $container = null, EmbedAdapterContract $adapter = null)
+    public function __construct(array $config = [], Container $container = null)
     {
         $this->setConfig($config);
 
         if (!is_null($container)) {
             $this->setContainer($container);
-        }
-
-        if ($adapter !== null) {
-            $this->setAdapter($adapter);
         }
 
         if (!self::$instance instanceof static) {
@@ -154,14 +151,16 @@ class Embed implements EmbedContract
     {
         if (!$this->isBooted()) {
             foreach ($this->getDefaultProviders() as $alias => $abstract) {
-                $this->registerProvider($alias, $this->getContainer()->has($abstract)
-                    ? $abstract : new $abstract($this)
+                $this->registerProvider(
+                    $alias,
+                    $this->getContainer()->has($abstract) ? $abstract : new $abstract($this)
                 );
             }
 
             foreach ($this->getDefaultFields() as $alias => $abstract) {
-                Field::register('embed', $this->containerHas($abstract)
-                    ? $this->containerGet($abstract) : new $abstract($this)
+                Field::register(
+                    'embed',
+                    $this->containerHas($abstract) ? $this->containerGet($abstract) : new $abstract($this)
                 );
             }
 
@@ -171,8 +170,9 @@ class Embed implements EmbedContract
             );
 
             foreach ($this->getDefaultPartials() as $alias => $abstract) {
-                $partialManager->register($alias, $this->containerHas($abstract)
-                    ? $abstract : new $abstract($this, $partialManager)
+                $partialManager->register(
+                    $alias,
+                    $this->containerHas($abstract) ? $abstract : new $abstract($this, $partialManager)
                 );
             }
 
@@ -211,7 +211,7 @@ class Embed implements EmbedContract
             if ($provider = $this->getProvider($alias)) {
                 try {
                     return $provider->get($url)->setDatas($extractor);
-                } catch(Exception $e) {
+                } catch (Exception $e) {
                     throw new RuntimeException($e->getMessage());
                 }
             }
@@ -339,7 +339,7 @@ class Embed implements EmbedContract
      */
     public function setAdapter(EmbedAdapterContract $adapter): EmbedContract
     {
-        $this->adapter = $adapter->setEmbedManager($this);
+        $this->adapter = $adapter;
 
         return $this;
     }

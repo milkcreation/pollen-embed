@@ -6,5 +6,4 @@ use Pollen\Embed\EmbedBaseProvider;
 
 class EmbedFacebookProvider extends EmbedBaseProvider implements EmbedFacebookProviderInterface
 {
-
 }

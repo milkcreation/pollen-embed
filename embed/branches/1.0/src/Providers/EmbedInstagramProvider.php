@@ -6,5 +6,4 @@ use Pollen\Embed\EmbedBaseProvider;
 
 class EmbedInstagramProvider extends EmbedBaseProvider implements EmbedInstagramProviderInterface
 {
-
 }
