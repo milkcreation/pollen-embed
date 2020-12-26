@@ -4,7 +4,6 @@ namespace Pollen\Embed;
 
 use Pollen\Embed\Adapters\WordpressAdapter;
 use Pollen\Embed\Contracts\EmbedContract;
-use Pollen\Embed\Contracts\EmbedProviderContract;
 use Pollen\Embed\Providers\EmbedFacebookProviderInterface;
 use Pollen\Embed\Providers\EmbedInstagramProviderInterface;
 use Pollen\Embed\Providers\EmbedPinterestProviderInterface;
@@ -36,7 +35,6 @@ class EmbedServiceProvider extends BaseServiceProvider
         EmbedFacebookProvider::class,
         EmbedInstagramProvider::class,
         EmbedPinterestProvider::class,
-        EmbedProviderContract::class,
         EmbedVideoProvider::class,
         EmbedVimeoProvider::class,
         EmbedYoutubeProvider::class,
@@ -116,10 +114,6 @@ class EmbedServiceProvider extends BaseServiceProvider
      */
     public function registerProviders(): void
     {
-        $this->getContainer()->add(EmbedProviderContract::class, function (): EmbedProviderContract {
-            return new EmbedBaseProvider($this->getContainer()->get(EmbedContract::class));
-        });
-
         $this->getContainer()->share(EmbedFacebookProvider::class, function (): EmbedFacebookProviderInterface {
             return new EmbedFacebookProvider($this->getContainer()->get(EmbedContract::class));
         });

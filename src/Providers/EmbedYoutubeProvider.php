@@ -2,7 +2,7 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedFactoryContract;
+use Pollen\Embed\EmbedFactoryInterface;
 use Pollen\Embed\EmbedBaseProvider;
 
 class EmbedYoutubeProvider extends EmbedBaseProvider implements EmbedYoutubeProviderInterface
@@ -10,7 +10,7 @@ class EmbedYoutubeProvider extends EmbedBaseProvider implements EmbedYoutubeProv
     /**
      * @inheritDoc
      */
-    public function get(string $url): EmbedFactoryContract
+    public function get(string $url): EmbedFactoryInterface
     {
         return new EmbedYoutubeFactory($url, $this);
     }

@@ -2,17 +2,17 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedFactoryContract;
-use Pollen\Embed\Contracts\EmbedProviderContract;
+use Pollen\Embed\EmbedFactoryInterface;
+use Pollen\Embed\EmbedProviderInterface;
 
-interface EmbedYoutubeProviderInterface extends EmbedProviderContract
+interface EmbedYoutubeProviderInterface extends EmbedProviderInterface
 {
     /**
      * {@inheritDoc}
      *
      * @return EmbedYoutubeFactoryInterface
      */
-    public function get(string $url): EmbedFactoryContract;
+    public function get(string $url): EmbedFactoryInterface;
 
     /**
      * Retrouve l'identifiant de qualification d'une vidéo depuis son url.

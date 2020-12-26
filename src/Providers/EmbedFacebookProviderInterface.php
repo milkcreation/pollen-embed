@@ -2,8 +2,8 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedProviderContract;
+use Pollen\Embed\EmbedProviderInterface;
 
-interface EmbedFacebookProviderInterface extends EmbedProviderContract
+interface EmbedFacebookProviderInterface extends EmbedProviderInterface
 {
 }

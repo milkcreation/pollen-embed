@@ -8,8 +8,6 @@ use RuntimeException;
 use Embed\Embed as EmbedApi;
 use Pollen\Embed\Adapters\AdapterInterface;
 use Pollen\Embed\Contracts\EmbedContract;
-use Pollen\Embed\Contracts\EmbedFactoryContract;
-use Pollen\Embed\Contracts\EmbedProviderContract;
 use Pollen\Embed\Field\EmbedField;
 use Pollen\Embed\Partial\EmbedPartial;
 use Pollen\Embed\Providers\EmbedFacebookProvider;
@@ -104,13 +102,13 @@ class Embed implements EmbedContract
 
     /**
      * Liste des fournisseurs de services déclarés.
-     * @var EmbedProviderContract[]|array
+     * @var EmbedProviderInterface[]|array
      */
     protected $providers = [];
 
     /**
      * Liste des définition de fournisseurs de services déclarés.
-     * @var EmbedProviderContract[]|array
+     * @var EmbedProviderInterface[]|array
      */
     protected $providerDefinitions = [];
 
@@ -202,7 +200,7 @@ class Embed implements EmbedContract
     /**
      * @inheritDoc
      */
-    public function dispatchFactory(string $url): EmbedFactoryContract
+    public function dispatchFactory(string $url): EmbedFactoryInterface
     {
         if ($this->getOEmbedEndpoint($url)) {
             $extractor = (new EmbedApi())->get($url);
@@ -284,7 +282,7 @@ class Embed implements EmbedContract
     /**
      * @inheritDoc
      */
-    public function getProvider(string $alias): ?EmbedProviderContract
+    public function getProvider(string $alias): ?EmbedProviderInterface
     {
         if (isset($this->providers[$alias])) {
             return $this->providers[$alias];
@@ -296,14 +294,14 @@ class Embed implements EmbedContract
 
         $params = [];
 
-        if (!$def instanceof EmbedProviderContract) {
+        if (!$def instanceof EmbedProviderInterface) {
             $params = is_array($def) ? $def : [];
             $provider = $this->containerHas($def) ? $this->containerGet($def) : new EmbedBaseProvider($this);
         } else {
             $provider = $def;
         }
 
-        if (!$provider instanceof EmbedProviderContract) {
+        if (!$provider instanceof EmbedProviderInterface) {
             return null;
         }
 
@@ -357,7 +355,7 @@ class Embed implements EmbedContract
     /**
      * @inheritDoc
      */
-    public function facebook(string $url): EmbedFactoryContract
+    public function facebook(string $url): EmbedFactoryInterface
     {
         $provider = $this->getProvider('facebook');
 
@@ -371,7 +369,7 @@ class Embed implements EmbedContract
     /**
      * @inheritDoc
      */
-    public function instagram(string $url): EmbedFactoryContract
+    public function instagram(string $url): EmbedFactoryInterface
     {
         $provider = $this->getProvider('instagram');
 
@@ -385,7 +383,7 @@ class Embed implements EmbedContract
     /**
      * @inheritDoc
      */
-    public function pinterest(string $url): EmbedFactoryContract
+    public function pinterest(string $url): EmbedFactoryInterface
     {
         $provider = $this->getProvider('pinterest');
 
@@ -413,7 +411,7 @@ class Embed implements EmbedContract
     /**
      * @inheritDoc
      */
-    public function vimeo(string $url): EmbedFactoryContract
+    public function vimeo(string $url): EmbedFactoryInterface
     {
         $provider = $this->getProvider('vimeo');
 

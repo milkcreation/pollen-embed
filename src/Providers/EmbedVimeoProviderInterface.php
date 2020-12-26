@@ -2,8 +2,8 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedProviderContract;
+use Pollen\Embed\EmbedProviderInterface;
 
-interface EmbedVimeoProviderInterface extends EmbedProviderContract
+interface EmbedVimeoProviderInterface extends EmbedProviderInterface
 {
 }

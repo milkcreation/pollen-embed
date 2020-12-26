@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Pollen\Embed\Contracts;
+namespace Pollen\Embed;
 
 use Embed\Extractor;
 
@@ -8,7 +8,7 @@ use Embed\Extractor;
  * @mixin \Embed\Extractor
  * @mixin \tiFy\Support\Concerns\ParamsBagTrait
  */
-interface EmbedFactoryContract
+interface EmbedFactoryInterface
 {
     /**
      * Délégation d'appel des attributs de l'api.
@@ -74,9 +74,9 @@ interface EmbedFactoryContract
     /**
      * Récupération de l'instance du fournisseur de service associé.
      *
-     * @return EmbedProviderContract
+     * @return EmbedProviderInterface
      */
-    public function provider(): EmbedProviderContract;
+    public function provider(): EmbedProviderInterface;
 
     /**
      * Rendu de l'affichage.
@@ -92,5 +92,5 @@ interface EmbedFactoryContract
      *
      * @return static
      */
-    public function setDatas($datas): EmbedFactoryContract;
+    public function setDatas($datas): EmbedFactoryInterface;
 }
