@@ -2,9 +2,9 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedFactoryContract;
+use Pollen\Embed\EmbedFactoryInterface;
 
-interface EmbedVideoFactoryInterface extends EmbedFactoryContract
+interface EmbedVideoFactoryInterface extends EmbedFactoryInterface
 {
     /**
      * Récupération de la liste des sources vidéo.

@@ -4,7 +4,7 @@ namespace Pollen\Embed\Partial;
 
 use Exception;
 use Pollen\Embed\Contracts\EmbedContract;
-use Pollen\Embed\Contracts\EmbedFactoryContract;
+use Pollen\Embed\EmbedFactoryInterface;
 use Pollen\Embed\EmbedAwareTrait;
 use Pollen\Embed\Providers\EmbedVideoFactoryInterface;
 use Pollen\Embed\Providers\EmbedYoutubeFactoryInterface;
@@ -40,7 +40,7 @@ class EmbedPartial extends BasePartialDriver
             'defer'      => 'auto',
             /**
              * Url|Instance des données embarqués distribuées par le fournisseur de service.
-             * @var EmbedFactoryContract|string|null
+             * @var EmbedFactoryInterface|string|null
              * {@internal EmbedFactoryContract recommandé, meilleures performances.}
              */
             'url'        => null,
@@ -108,7 +108,7 @@ class EmbedPartial extends BasePartialDriver
             $this->set('tmpl', 'oops');
 
             return parent::render();
-        } elseif (!$url instanceof EmbedFactoryContract) {
+        } elseif (!$url instanceof EmbedFactoryInterface) {
             $url = trim($url);
 
             if ($defer === false) {
@@ -150,7 +150,7 @@ class EmbedPartial extends BasePartialDriver
                 'attrs.data-provider' => $provider,
                 'tmpl'                => 'defered',
             ]);
-        } elseif ($factory instanceof EmbedFactoryContract) {
+        } elseif ($factory instanceof EmbedFactoryInterface) {
             $providers = $this->pull('providers', []);
             $provider = $factory->getProviderAlias();
 

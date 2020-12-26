@@ -2,7 +2,7 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedProviderContract;
+use Pollen\Embed\EmbedProviderInterface;
 use Pollen\Embed\EmbedBaseFactory;
 
 class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryInterface
@@ -93,7 +93,7 @@ class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryInt
      *
      * @return EmbedVideoProviderInterface
      */
-    public function provider(): EmbedProviderContract
+    public function provider(): EmbedProviderInterface
     {
         return parent::provider();
     }

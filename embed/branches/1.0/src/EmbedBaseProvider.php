@@ -4,12 +4,10 @@ namespace Pollen\Embed;
 
 use LogicException;
 use Pollen\Embed\Contracts\EmbedContract;
-use Pollen\Embed\Contracts\EmbedFactoryContract;
-use Pollen\Embed\Contracts\EmbedProviderContract;
 use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ParamsBagTrait;
 
-class EmbedBaseProvider implements EmbedProviderContract
+class EmbedBaseProvider implements EmbedProviderInterface
 {
     use BootableTrait, EmbedAwareTrait, ParamsBagTrait;
 
@@ -30,7 +28,7 @@ class EmbedBaseProvider implements EmbedProviderContract
     /**
      * @inheritDoc
      */
-    public function boot(): EmbedProviderContract
+    public function boot(): EmbedProviderInterface
     {
         if ($this->isBooted()) {
             if (!$this->getAlias()) {
@@ -50,7 +48,7 @@ class EmbedBaseProvider implements EmbedProviderContract
     /**
      * @inheritDoc
      */
-    public function get(string $url): EmbedFactoryContract
+    public function get(string $url): EmbedFactoryInterface
     {
         return new EmbedBaseFactory($url, $this);
     }
@@ -66,7 +64,7 @@ class EmbedBaseProvider implements EmbedProviderContract
     /**
      * @inheritDoc
      */
-    public function setAlias(string $alias): EmbedProviderContract
+    public function setAlias(string $alias): EmbedProviderInterface
     {
         $this->alias = $alias;
 

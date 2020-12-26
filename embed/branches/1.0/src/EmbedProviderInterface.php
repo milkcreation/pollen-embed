@@ -1,29 +1,29 @@
 <?php declare(strict_types=1);
 
-namespace Pollen\Embed\Contracts;
+namespace Pollen\Embed;
 
 /**
  * @mixin \tiFy\Support\Concerns\BootableTrait
  * @mixin \Pollen\Embed\EmbedAwareTrait
  * @mixin \tiFy\Support\Concerns\ParamsBagTrait
  */
-interface EmbedProviderContract
+interface EmbedProviderInterface
 {
     /**
      * Initialisation.
      *
      * @return static
      */
-    public function boot(): EmbedProviderContract;
+    public function boot(): EmbedProviderInterface;
 
     /**
      * Récupération des informations associées à une Url du service.
      *
      * @param string $url
      *
-     * @return EmbedFactoryContract
+     * @return EmbedFactoryInterface
      */
-    public function get(string $url): EmbedFactoryContract;
+    public function get(string $url): EmbedFactoryInterface;
 
     /**
      * Récupération de l'alias de qualification.
@@ -39,5 +39,5 @@ interface EmbedProviderContract
      *
      * @return static
      */
-    public function setAlias(string $alias): EmbedProviderContract;
+    public function setAlias(string $alias): EmbedProviderInterface;
 }

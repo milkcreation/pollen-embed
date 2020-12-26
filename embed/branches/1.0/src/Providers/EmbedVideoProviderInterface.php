@@ -2,16 +2,16 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedFactoryContract;
-use Pollen\Embed\Contracts\EmbedProviderContract;
+use Pollen\Embed\EmbedFactoryInterface;
+use Pollen\Embed\EmbedProviderInterface;
 
-interface EmbedVideoProviderInterface extends EmbedProviderContract
+interface EmbedVideoProviderInterface extends EmbedProviderInterface
 {
     /**
      * {@inheritDoc}
      *
      * @return EmbedVideoFactoryInterface
      */
-    public function get(string $url): EmbedFactoryContract;
+    public function get(string $url): EmbedFactoryInterface;
 
 }

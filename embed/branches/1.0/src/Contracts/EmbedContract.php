@@ -4,6 +4,8 @@ namespace Pollen\Embed\Contracts;
 
 use Exception;
 use Pollen\Embed\Adapters\AdapterInterface;
+use Pollen\Embed\EmbedFactoryInterface;
+use Pollen\Embed\EmbedProviderInterface;
 use Pollen\Embed\Providers\EmbedVideoFactoryInterface;
 use Pollen\Embed\Providers\EmbedYoutubeFactoryInterface;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
@@ -48,11 +50,11 @@ interface EmbedContract
      *
      * @param string $url
      *
-     * @return EmbedFactoryContract
+     * @return EmbedFactoryInterface
      *
      * @throws Exception
      */
-    public function dispatchFactory(string $url): EmbedFactoryContract;
+    public function dispatchFactory(string $url): EmbedFactoryInterface;
 
     /**
      * Récupération de l'instance de l'adapteur.
@@ -97,15 +99,15 @@ interface EmbedContract
      *
      * @param string $alias
      *
-     * @return EmbedProviderContract|null
+     * @return EmbedProviderInterface|null
      */
-    public function getProvider(string $alias): ?EmbedProviderContract;
+    public function getProvider(string $alias): ?EmbedProviderInterface;
 
     /**
      * Déclaration d'un fournisseur de service.
      *
      * @param string $alias
-     * @param EmbedProviderContract|string|array $providerDefinition
+     * @param EmbedProviderInterface|string|array $providerDefinition
      *
      * @return EmbedContract
      */
@@ -145,27 +147,27 @@ interface EmbedContract
      *
      * @param string $url
      *
-     * @return EmbedFactoryContract
+     * @return EmbedFactoryInterface
      */
-    public function facebook(string $url): EmbedFactoryContract;
+    public function facebook(string $url): EmbedFactoryInterface;
 
     /**
      * Récupération d'une instance de service fourni par Instagram.
      *
      * @param string $url
      *
-     * @return EmbedFactoryContract
+     * @return EmbedFactoryInterface
      */
-    public function instagram(string $url): EmbedFactoryContract;
+    public function instagram(string $url): EmbedFactoryInterface;
 
     /**
      * Récupération d'une instance de service fourni par Pinterest.
      *
      * @param string $url
      *
-     * @return EmbedFactoryContract
+     * @return EmbedFactoryInterface
      */
-    public function pinterest(string $url): EmbedFactoryContract;
+    public function pinterest(string $url): EmbedFactoryInterface;
 
     /**
      * Récupération d'une instance de service d'une video.
@@ -181,9 +183,9 @@ interface EmbedContract
      *
      * @param string $url
      *
-     * @return EmbedFactoryContract
+     * @return EmbedFactoryInterface
      */
-    public function vimeo(string $url): EmbedFactoryContract;
+    public function vimeo(string $url): EmbedFactoryInterface;
 
     /**
      * Récupération d'une instance de service fourni par Youtube.

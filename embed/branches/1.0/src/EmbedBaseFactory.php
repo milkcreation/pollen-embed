@@ -8,8 +8,6 @@ use Error;
 use InvalidArgumentException;
 use Embed\Embed as DelegateApiDriver;
 use Embed\Extractor;
-use Pollen\Embed\Contracts\EmbedFactoryContract;
-use Pollen\Embed\Contracts\EmbedProviderContract;
 use StdClass;
 use tiFy\Support\Concerns\ParamsBagTrait;
 use tiFy\Support\Proxy\Partial;
@@ -18,13 +16,13 @@ use tiFy\Support\Proxy\Url;
 /**
  * @mixin DelegateApiDriver
  */
-class EmbedBaseFactory implements EmbedFactoryContract
+class EmbedBaseFactory implements EmbedFactoryInterface
 {
     use ParamsBagTrait;
 
     /**
      * Instance du fournisseur de service associé.
-     * @var EmbedProviderContract
+     * @var EmbedProviderInterface
      */
     private $provider;
 
@@ -48,9 +46,9 @@ class EmbedBaseFactory implements EmbedFactoryContract
 
     /**
      * @param string $url
-     * @param EmbedProviderContract $provider
+     * @param EmbedProviderInterface $provider
      */
-    public function __construct(string $url, EmbedProviderContract $provider)
+    public function __construct(string $url, EmbedProviderInterface $provider)
     {
         $this->url = $url;
         $this->provider = $provider;
@@ -140,7 +138,7 @@ class EmbedBaseFactory implements EmbedFactoryContract
     /**
      * @inheritDoc
      */
-    public function provider(): EmbedProviderContract
+    public function provider(): EmbedProviderInterface
     {
         return $this->provider;
     }
@@ -156,7 +154,7 @@ class EmbedBaseFactory implements EmbedFactoryContract
     /**
      * @inheritDoc
      */
-    public function setDatas($datas): EmbedFactoryContract
+    public function setDatas($datas): EmbedFactoryInterface
     {
         $this->datas = $datas;
 

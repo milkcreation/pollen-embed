@@ -2,9 +2,9 @@
 
 namespace Pollen\Embed\Providers;
 
-use Pollen\Embed\Contracts\EmbedFactoryContract;
+use Pollen\Embed\EmbedFactoryInterface;
 
-interface EmbedYoutubeFactoryInterface extends EmbedFactoryContract
+interface EmbedYoutubeFactoryInterface extends EmbedFactoryInterface
 {
     /**
      * Récupération de l'identifiant de qualification de la vidéo.

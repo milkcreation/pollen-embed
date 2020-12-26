@@ -3,7 +3,7 @@
 namespace Pollen\Embed\Providers;
 
 use RuntimeException;
-use Pollen\Embed\Contracts\EmbedProviderContract;
+use Pollen\Embed\EmbedProviderInterface;
 use Pollen\Embed\EmbedBaseFactory;
 use tiFy\Support\Proxy\Url;
 
@@ -23,9 +23,9 @@ class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactor
 
     /**
      * @param string $url
-     * @param EmbedProviderContract $provider
+     * @param EmbedProviderInterface $provider
      */
-    public function __construct(string $url, EmbedProviderContract $provider)
+    public function __construct(string $url, EmbedProviderInterface $provider)
     {
         parent::__construct($url, $provider);
 
@@ -104,7 +104,7 @@ class EmbedYoutubeFactory extends EmbedBaseFactory implements EmbedYoutubeFactor
      *
      * @return EmbedYoutubeProviderInterface
      */
-    public function provider(): EmbedProviderContract
+    public function provider(): EmbedProviderInterface
     {
         return parent::provider();
     }
