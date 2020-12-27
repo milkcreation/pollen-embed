@@ -39,7 +39,8 @@ use tiFy\Routing\UrlFactory;
 
 class Embed implements EmbedContract
 {
-    use BootableTrait, ContainerAwareTrait;
+    use BootableTrait;
+    use ContainerAwareTrait;
 
     /**
      * Instance de la classe.
@@ -148,6 +149,8 @@ class Embed implements EmbedContract
     public function boot(): EmbedContract
     {
         if (!$this->isBooted()) {
+            events()->trigger('embed.booting', [$this]);
+
             foreach ($this->getDefaultProviders() as $alias => $abstract) {
                 $this->registerProvider(
                     $alias,
@@ -175,6 +178,8 @@ class Embed implements EmbedContract
             }
 
             $this->setBooted();
+
+            events()->trigger('embed.booted', [$this]);
         }
         return $this;
     }
