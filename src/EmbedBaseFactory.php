@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Embed;
 
@@ -10,7 +12,6 @@ use Embed\Embed as DelegateApiDriver;
 use Embed\Extractor;
 use StdClass;
 use tiFy\Support\Concerns\ParamsBagTrait;
-use tiFy\Support\Proxy\Partial;
 use tiFy\Support\Proxy\Url;
 
 /**
@@ -148,7 +149,7 @@ class EmbedBaseFactory implements EmbedFactoryInterface
      */
     public function render(): string
     {
-        return Partial::get('embed', ['url' => $this])->render();
+        return $this->provider()->embedManager()->partialManager()->get('embed', ['url' => $this])->render();
     }
 
     /**

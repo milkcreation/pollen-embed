@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Embed\Providers;
 
@@ -20,7 +22,11 @@ class EmbedYoutubeProvider extends EmbedBaseProvider implements EmbedYoutubeProv
      */
     public function fetchVideoIdFromUrl(string $url): ?string
     {
-        preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match);
+        preg_match(
+            '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i',
+            $url,
+            $match
+        );
 
         return $match[1] ?? null;
     }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Embed;
 
@@ -9,7 +11,9 @@ use tiFy\Support\Concerns\ParamsBagTrait;
 
 class EmbedBaseProvider implements EmbedProviderInterface
 {
-    use BootableTrait, EmbedAwareTrait, ParamsBagTrait;
+    use BootableTrait;
+    use EmbedAwareTrait;
+    use ParamsBagTrait;
 
     /**
      * Alias de qualification.
