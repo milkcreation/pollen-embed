@@ -1,10 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Embed\Adapters;
 
 use Pollen\Embed\EmbedAwareTrait;
 use Pollen\Embed\Contracts\EmbedContract;
-use Pollen\Embed\Adapters\Wordpress\Field\EmbedField;
 
 abstract class AbstractEmbedAdapter implements AdapterInterface
 {
@@ -14,9 +15,7 @@ abstract class AbstractEmbedAdapter implements AdapterInterface
      * Liste des champs par défaut.
      * @var string[][]
      */
-    protected $defaultFields = [
-        'embed'  => EmbedField::class
-    ];
+    protected $defaultFields = [];
 
     /**
      * Liste des portions d'affichage par défaut.

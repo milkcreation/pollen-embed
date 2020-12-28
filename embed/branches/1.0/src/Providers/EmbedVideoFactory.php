@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Embed\Providers;
 
@@ -44,7 +46,7 @@ class EmbedVideoFactory extends EmbedBaseFactory implements EmbedVideoFactoryInt
             'suppressNotSupportedError' => null,
             'techCanOverridePoster'     => null,
             'techOrder'                 => null,
-            'userActions'               => null
+            'userActions'               => null,
         ];
     }
 
