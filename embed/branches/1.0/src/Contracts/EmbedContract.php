@@ -12,11 +12,12 @@ use Pollen\Embed\Providers\EmbedVideoFactoryInterface;
 use Pollen\Embed\Providers\EmbedYoutubeFactoryInterface;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Contracts\Support\ParamsBag;
-use tiFy\Partial\Contracts\PartialContract;
 
 /**
  * @mixin \tiFy\Support\Concerns\BootableTrait
  * @mixin \tiFy\Support\Concerns\ContainerAwareTrait
+ * @mixin \tiFy\Support\Concerns\FieldManagerAwareTrait
+ * @mixin \tiFy\Support\Concerns\PartialManagerAwareTrait
  */
 interface EmbedContract
 {
@@ -107,13 +108,6 @@ interface EmbedContract
     public function getProvider(string $alias): ?EmbedProviderInterface;
 
     /**
-     * Instance du gestionnaire de portions d'affichage.
-     *
-     * @return PartialContract
-     */
-    public function partialManager(): PartialContract;
-
-    /**
      * Déclaration d'un fournisseur de service.
      *
      * @param string $alias
@@ -152,15 +146,6 @@ interface EmbedContract
      * @return static
      */
     public function setConfig(array $attrs): EmbedContract;
-
-    /**
-     * Définition du gestionnaire de portion d'affichage.
-     *
-     * @param PartialContract $partialManager
-     *
-     * @return static
-     */
-    public function setPartialManager(PartialContract $partialManager): EmbedContract;
 
     /**
      * Récupération d'une instance de service fourni par Facebook.

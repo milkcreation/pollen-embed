@@ -1,6 +1,6 @@
 <?php
 /**
- * @var tiFy\Contracts\Field\FieldView $this
+ * @var tiFy\Field\FieldViewInterface $this
  */
 ?>
 <?php $this->layout('wrapper', $this->all()); ?>

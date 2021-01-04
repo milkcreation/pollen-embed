@@ -72,8 +72,8 @@ class EmbedServiceProvider extends BaseServiceProvider
         );
 
         $this->registerAdapters();
-        $this->registerFields();
-        $this->registerPartials();
+        $this->registerFieldDrivers();
+        $this->registerPartialDrivers();
         $this->registerProviders();
     }
 
@@ -97,7 +97,7 @@ class EmbedServiceProvider extends BaseServiceProvider
      *
      * @return void
      */
-    public function registerFields(): void
+    public function registerFieldDrivers(): void
     {
         $this->getContainer()->add(
             EmbedField::class,
@@ -115,7 +115,7 @@ class EmbedServiceProvider extends BaseServiceProvider
      *
      * @return void
      */
-    public function registerPartials(): void
+    public function registerPartialDrivers(): void
     {
         $this->getContainer()->add(
             EmbedPartial::class,
