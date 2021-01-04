@@ -29,12 +29,10 @@ use Pollen\Embed\Providers\EmbedYoutubeProviderInterface;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
-use tiFy\Field\Contracts\FieldContract;
-use tiFy\Field\Field;
-use tiFy\Partial\Contracts\PartialContract;
-use tiFy\Partial\Partial;
 use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ContainerAwareTrait;
+use tiFy\Support\Concerns\FieldManagerAwareTrait;
+use tiFy\Support\Concerns\PartialManagerAwareTrait;
 use tiFy\Support\MimeTypes;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Storage;
@@ -44,6 +42,8 @@ class Embed implements EmbedContract
 {
     use BootableTrait;
     use ContainerAwareTrait;
+    use FieldManagerAwareTrait;
+    use PartialManagerAwareTrait;
 
     /**
      * Instance de la classe.
@@ -105,12 +105,6 @@ class Embed implements EmbedContract
     protected $oembedEndpointsMap;
 
     /**
-     * Instance du gestion de portions d'affichage.
-     * @var PartialContract
-     */
-    protected $partialManager;
-
-    /**
      * Liste des fournisseurs de services déclarés.
      * @var EmbedProviderInterface[]|array
      */
@@ -167,15 +161,10 @@ class Embed implements EmbedContract
                 );
             }
 
-            /** @var FieldContract $fieldManager */
-            $fieldManager = ($this->containerHas(FieldContract::class)
-                ? $this->containerGet(FieldContract::class) : new Field()
-            );
-
             foreach ($this->getDefaultFields() as $alias => $abstract) {
-                $fieldManager->register(
+                $this->fieldManager()->register(
                     'embed',
-                    $this->containerHas($abstract) ? $abstract : new $abstract($this, $fieldManager)
+                    $this->containerHas($abstract) ? $abstract : new $abstract($this, $this->fieldManager())
                 );
             }
 
@@ -185,7 +174,6 @@ class Embed implements EmbedContract
                     $this->containerHas($abstract) ? $abstract : new $abstract($this, $this->partialManager())
                 );
             }
-
             $this->setBooted();
 
             events()->trigger('embed.booted', [$this]);
@@ -327,19 +315,6 @@ class Embed implements EmbedContract
     /**
      * @inheritDoc
      */
-    public function partialManager(): PartialContract
-    {
-        if ($this->partialManager === null) {
-            $this->partialManager = $this->containerHas(PartialContract::class)
-                ? $this->containerGet(PartialContract::class) : new Partial();
-        }
-
-        return $this->partialManager;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function resources(?string $path = null)
     {
         if (!isset($this->resources) || is_null($this->resources)) {
@@ -374,16 +349,6 @@ class Embed implements EmbedContract
     public function setConfig(array $attrs): EmbedContract
     {
         $this->config($attrs);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setPartialManager(PartialContract $partialManager): EmbedContract
-    {
-        $this->partialManager = $partialManager;
 
         return $this;
     }

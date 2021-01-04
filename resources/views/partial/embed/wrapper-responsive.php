@@ -1,6 +1,6 @@
 <?php
 /**
- * @var tiFy\Contracts\Partial\PartialView $this
+ * @var tiFy\Partial\PartialViewInterface $this
  */
 ?>
 <div class="Embed-wrapper Embed-wrapper--responsive" style="padding-bottom:<?php echo $this->get('ratio'); ?>%;">
